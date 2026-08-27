@@ -13,6 +13,7 @@ import { Dropdown } from "@/components/Dropdown";
 import ServiceFilterDropdown from "@/components/ServiceFilterDropdown";
 import { downloadCSV, exportPrintablePDF, ExportDataRow } from "@/utils/export";
 import { SERVICE_TYPE_LABELS, ServiceType } from "@/types/search";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface ClientRecord {
  id: string;
@@ -50,6 +51,10 @@ export default function DashboardClientView({
  rawResults,
  maxClients,
 }: DashboardClientViewProps) {
+main
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+main
   const [dateRange, setDateRange] = useState("30d");
   const [serviceFilter, setServiceFilter] = useState("all");
 
