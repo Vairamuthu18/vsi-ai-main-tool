@@ -28,9 +28,25 @@ export interface SessionContext {
  * Returns true when Supabase is configured with placeholder / dummy
  * credentials (local dev without a real backend).
  */
-function isDummySupabase(): boolean {
+export function isDummySupabase(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   return url.includes("dummy") || url.includes("your-project.supabase.co") || url.includes("localhost:54321") || url === "";
+}
+
+function cleanVal(val?: string | null): string | null {
+  if (!val) return null;
+  try {
+    let decoded = decodeURIComponent(val).trim();
+    if (decoded.startsWith('"') && decoded.endsWith('"')) {
+      decoded = decoded.slice(1, -1);
+    }
+    if (decoded.startsWith("'") && decoded.endsWith("'")) {
+      decoded = decoded.slice(1, -1);
+    }
+    return decoded.trim();
+  } catch {
+    return val;
+  }
 }
 
 /** Extract user details from cookies set during client session creation. */
@@ -49,11 +65,11 @@ async function getCookieUser(): Promise<{
     const agencyEmailCookie = cookieStore.get("vsi_agency_email")?.value;
     const logoMarkerCookie = cookieStore.get("vsi_agency_logo_marker")?.value;
     return {
-      email: emailCookie ? decodeURIComponent(emailCookie) : null,
-      fullName: nameCookie ? decodeURIComponent(nameCookie) : null,
-      agencyDisplayName: displayNameCookie ? decodeURIComponent(displayNameCookie) : null,
-      agencyEmail: agencyEmailCookie ? decodeURIComponent(agencyEmailCookie) : null,
-      agencyLogoMarker: logoMarkerCookie || null,
+      email: cleanVal(emailCookie),
+      fullName: cleanVal(nameCookie),
+      agencyDisplayName: cleanVal(displayNameCookie),
+      agencyEmail: cleanVal(agencyEmailCookie),
+      agencyLogoMarker: cleanVal(logoMarkerCookie),
     };
   } catch {
     return { email: null, fullName: null, agencyDisplayName: null, agencyEmail: null, agencyLogoMarker: null };
@@ -114,52 +130,54 @@ export async function getSession(): Promise<SessionContext | null> {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !isAuthorizedEmail(user.email)) {
-      return null;
+    if (user && isAuthorizedEmail(user.email)) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("agency_id, role, full_name, agencies(name, is_pilot, max_keywords, display_name, logo_url, primary_color, support_email, report_footer)")
+        .eq("id", user.id)
+        .single();
+
+      const agency = (profile?.agencies as unknown) as {
+        name: string; is_pilot: boolean; max_keywords: number;
+        display_name: string | null; logo_url: string | null;
+        primary_color: string | null; support_email: string | null;
+        report_footer: string | null;
+      } | null;
+
+      const cookieUserData = await getCookieUser();
+      const resolvedEmail = user.email ?? cookieUserData.email ?? "";
+      const resolvedName = profile?.full_name ?? cookieUserData.fullName ?? null;
+
+      const userRole = (profile?.role as UserRole) ?? "pilot";
+      return {
+        userId:       user.id,
+        email:        resolvedEmail,
+        fullName:     resolvedName,
+        role:         userRole,
+        agencyId:     profile?.agency_id ?? "agency-001",
+        agencyName:   agency?.name ?? "Valgrow Enterprise",
+        isPilot:      agency?.is_pilot ?? true,
+        maxKeywords:  agency?.max_keywords ?? 10,
+        branding: {
+          displayName:  agency?.display_name ?? null,
+          logoUrl:      agency?.logo_url ?? null,
+          primaryColor: agency?.primary_color ?? null,
+          supportEmail: agency?.support_email ?? null,
+          reportFooter: agency?.report_footer ?? null,
+        },
+      };
     }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("agency_id, role, full_name, agencies(name, is_pilot, max_keywords, display_name, logo_url, primary_color, support_email, report_footer)")
-      .eq("id", user.id)
-      .single();
-
-    const agency = (profile?.agencies as unknown) as {
-      name: string; is_pilot: boolean; max_keywords: number;
-      display_name: string | null; logo_url: string | null;
-      primary_color: string | null; support_email: string | null;
-      report_footer: string | null;
-    } | null;
-
-    const cookieUserData = await getCookieUser();
-    const resolvedEmail = user.email ?? cookieUserData.email ?? "";
-    const resolvedName = profile?.full_name ?? cookieUserData.fullName ?? null;
-
-    const userRole = (profile?.role as UserRole) ?? "pilot";
-    return {
-      userId:       user.id,
-      email:        resolvedEmail,
-      fullName:     resolvedName,
-      role:         userRole,
-      agencyId:     profile?.agency_id ?? "agency-001",
-      agencyName:   agency?.name ?? "Valgrow Enterprise",
-      isPilot:      agency?.is_pilot ?? true,
-      maxKeywords:  agency?.max_keywords ?? 10,
-      branding: {
-        displayName:  agency?.display_name ?? null,
-        logoUrl:      agency?.logo_url ?? null,
-        primaryColor: agency?.primary_color ?? null,
-        supportEmail: agency?.support_email ?? null,
-        reportFooter: agency?.report_footer ?? null,
-      },
-    };
   } catch {
-    const cookieUserData = await getCookieUser();
-    if (!isAuthorizedEmail(cookieUserData.email)) {
-      return null;
-    }
+    // ignore and fall through
+  }
+
+  // Fallback to cookie-based session check
+  const cookieUserData = await getCookieUser();
+  if (isAuthorizedEmail(cookieUserData.email)) {
     return dynamicSession();
   }
+
+  return null;
 }
 
 export async function requireAgency(): Promise<SessionContext & { agencyId: string; agencyName: string }> {

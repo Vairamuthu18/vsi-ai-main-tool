@@ -5,5 +5,12 @@ export const AUTHORIZED_EMAIL = "valgrowlabs444@gmail.com";
  */
 export function isAuthorizedEmail(email?: string | null): boolean {
   if (!email) return false;
-  return email.trim().toLowerCase() === AUTHORIZED_EMAIL.toLowerCase();
+  let cleaned = email.trim().toLowerCase();
+  if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+    cleaned = cleaned.slice(1, -1);
+  }
+  if (cleaned.startsWith("'") && cleaned.endsWith("'")) {
+    cleaned = cleaned.slice(1, -1);
+  }
+  return cleaned.trim() === AUTHORIZED_EMAIL.toLowerCase();
 }

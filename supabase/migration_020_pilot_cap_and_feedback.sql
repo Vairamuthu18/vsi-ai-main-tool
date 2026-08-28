@@ -90,7 +90,7 @@ create policy "feedback_agency_read_own"
   on public.feedback for select
   to authenticated
   using (
-    agency_id = (select agency_id from public.profiles where id = auth.uid())
+    user_id = auth.uid()
   );
 
 -- Super admins see and manage everything.

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { FullScreenSignup } from '@/components/ui/full-screen-signup';
 import { Toast } from '../common/Toast';
 import type { ToastMessage, UserProfile } from '@/types/login';
-import { setClientSession } from '@/lib/auth-client';
+import { setClientSession, isAuthenticatedClient } from '@/lib/auth-client';
 import { isAuthorizedEmail } from '@/lib/auth-config';
 import { createClient } from '@/lib/supabase/client';
 
@@ -23,6 +23,10 @@ export const LoginPage: React.FC = () => {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (isAuthenticatedClient()) {
+      window.location.href = "/dashboard";
+      return;
+    }
     const params = new URLSearchParams(window.location.search);
     const errorParam = params.get("error");
     if (errorParam === "unauthorized_account") {

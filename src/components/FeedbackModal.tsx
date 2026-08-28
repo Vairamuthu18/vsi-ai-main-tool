@@ -8,8 +8,20 @@ import {
   CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
+import { createClient } from "@/lib/supabase/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+const checkSupabaseConfig = () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || url.includes("dummy") || url.includes("your-project.supabase.co")) {
+    throw new Error("Supabase is not configured. Please define NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.");
+  }
+  if (!key || key.includes("anon_key_here")) {
+    throw new Error("Supabase Anon Key is missing or invalid. Please configure NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+  }
+};
 
 interface EmojiOption {
   emoji: string;
@@ -262,39 +274,62 @@ export default function FeedbackModal({ open, onClose }: FeedbackModalProps) {
         });
       }
 
-      const payload = {
-        rating,
-        comment:         comment.trim(),
-        attachment_name: attachmentName,
-        attachment_data: attachmentData,
-        page:            pathname,
-        browser,
-        device,
-        os,
-        screen,
-        viewport,
-        timezone,
-        theme:           resolvedTheme,
-        timestamp:       new Date().toISOString(),
-      };
+      checkSupabaseConfig();
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      const res  = await fetch("/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let profileAgencyId: string | null = null;
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("agency_id")
+          .eq("id", user.id)
+          .single();
+        profileAgencyId = profile?.agency_id ?? null;
+      }
 
-      const data = await res.json().catch(() => ({})) as { error?: string };
+      const ratingCategory = (() => {
+        if (rating >= 4) return "praise";
+        if (rating === 3) return "general";
+        return "bug";
+      })();
 
-      if (!res.ok) {
-        setToast({ message: data.error ?? "Unable to submit feedback. Please try again.", type: "error" });
-        return;
+      const { data: insertedData, error: insertError } = await supabase
+        .from("feedback")
+        .insert({
+          agency_id: profileAgencyId,
+          user_id: user?.id ?? null,
+          category: ratingCategory,
+          message: comment.trim(),
+          page_url: pathname,
+          user_agent: browser,
+          context_data: {
+            rating,
+            device,
+            os,
+            screen,
+            viewport,
+            timezone,
+            theme: resolvedTheme,
+            timestamp: new Date().toISOString(),
+            attachment_name: attachmentName,
+          }
+        })
+        .select("id")
+        .single();
+
+      if (insertError) {
+        throw new Error(insertError.message);
       }
 
       setToast({ message: "Thank you! Your feedback has been submitted successfully.", type: "success" });
       onClose();
-    } catch {
-      setToast({ message: "Unable to submit feedback. Please try again.", type: "error" });
+    } catch (err: any) {
+      console.error("Feedback modal DB insert failed:", err);
+      const msg = err instanceof Error && err.message === "fetch failed"
+        ? "Database connection failed: The database server is unreachable. Please verify NEXT_PUBLIC_SUPABASE_URL."
+        : err.message || "Unable to submit feedback. Please try again.";
+      setToast({ message: msg, type: "error" });
     } finally {
       setSubmitting(false);
     }

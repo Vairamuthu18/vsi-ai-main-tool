@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { MessageSquare, Send, CheckCircle2, Star, ThumbsUp, Filter, Search } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { MessageSquare, Send, CheckCircle2, Star, ThumbsUp, Filter, Search, Clock } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 interface FeedbackItem {
  id: string;
@@ -53,34 +54,207 @@ export default function FeedbackPage() {
  const [message, setMessage] = useState("");
  const [category, setCategory] = useState<FeedbackItem["category"]>("Feature Request");
  const [submitted, setSubmitted] = useState(false);
+ const [myFeedback, setMyFeedback] = useState<FeedbackItem[]>([]);
 
- const handleSubmitFeedback = (e: React.FormEvent) => {
- e.preventDefault();
- if (!subject.trim() || !message.trim()) return;
+  const [authLoading, setAuthLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
- const newItem: FeedbackItem = {
- id: `fb-${Date.now()}`,
- category,
- subject: subject.trim(),
- message: message.trim(),
- author: "you@agency.com",
- createdAt: new Date().toISOString().split("T")[0],
- status: "Open",
- upvotes: 1,
- };
+  const isDummy = () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+    return url.includes("dummy") || url.includes("your-project.supabase.co") || url.includes("localhost:54321") || url === "";
+  };
 
- setFeedbackList([newItem, ...feedbackList]);
- setSubject("");
- setMessage("");
- setSubmitted(true);
- setTimeout(() => setSubmitted(false), 4000);
- };
+  const mapDatabaseCategory = (cat: string): "Feature Request" | "Bug Report" | "UX Improvement" => {
+    if (cat === "bug") return "Bug Report";
+    if (cat === "idea") return "Feature Request";
+    return "UX Improvement";
+  };
 
- const handleUpvote = (id: string) => {
- setFeedbackList((prev) =>
- prev.map((item) => (item.id === id ? { ...item, upvotes: item.upvotes + 1 } : item))
- );
- };
+  const checkSupabaseConfig = () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || url.includes("dummy") || url.includes("your-project.supabase.co")) {
+      throw new Error("Supabase is not configured. Please define NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment variables.");
+    }
+    if (!key || key.includes("anon_key_here")) {
+      throw new Error("Supabase Anon Key is missing or invalid. Please configure NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+    }
+  };
+
+  const fetchMyFeedback = async () => {
+    if (authLoading) return;
+
+    try {
+      checkSupabaseConfig();
+      const supabase = createClient();
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) return;
+
+      const { data, error } = await supabase
+        .from("feedback")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data && Array.isArray(data)) {
+        const mapped: FeedbackItem[] = data.map((item: any) => {
+          const cat = mapDatabaseCategory(item.category);
+          const subj = item.context_data?.subject || "Feedback Submission";
+          const statusMap = (stat: string): FeedbackItem["status"] => {
+            if (stat === "done" || stat === "Resolved") return "Resolved";
+            if (stat === "triaged" || stat === "in_progress" || stat === "In Review") return "In Review";
+            return "Open";
+          };
+          return {
+            id: item.id,
+            category: cat,
+            subject: subj,
+            message: item.message,
+            author: "you@agency.com",
+            createdAt: item.created_at ? item.created_at.split("T")[0] : new Date().toISOString().split("T")[0],
+            status: statusMap(item.status),
+            upvotes: 1,
+          };
+        });
+        setMyFeedback(mapped);
+      }
+    } catch (e: any) {
+      console.warn("Failed to fetch feedback from Supabase directly:", e);
+      const msg = e instanceof Error && e.message === "fetch failed"
+        ? "Database connection failed: The database server is unreachable. Please verify NEXT_PUBLIC_SUPABASE_URL."
+        : e.message || String(e);
+      // Log to console for dev validation
+      console.error("My Feedback load error:", msg);
+    }
+  };
+
+  useEffect(() => {
+    const loadSession = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        setUser(currentUser);
+      } catch (e) {
+        console.error("Error loading session:", e);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+    loadSession();
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading) {
+      fetchMyFeedback();
+    }
+  }, [authLoading]);
+
+  const handleSubmitFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subject.trim() || !message.trim()) return;
+
+    if (authLoading) {
+      alert("Authentication is still loading. Please try again in a moment.");
+      return;
+    }
+
+    const newItem: FeedbackItem = {
+      id: `fb-${Date.now()}`,
+      category,
+      subject: subject.trim(),
+      message: message.trim(),
+      author: "you@agency.com",
+      createdAt: new Date().toISOString().split("T")[0],
+      status: "Open",
+      upvotes: 1,
+    };
+
+    // Keep existing community list update
+    setFeedbackList([newItem, ...feedbackList]);
+
+    const apiCategory = 
+      category === "Bug Report" ? "bug" : 
+      category === "Feature Request" ? "idea" : "general";
+
+    try {
+      checkSupabaseConfig();
+      const supabase = createClient();
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
+        throw new Error("No authenticated session found. Please sign in again.");
+      }
+
+      // Fetch user's profile to get agency_id
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("agency_id")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (profileError) {
+        throw new Error(`Profile fetch failed: ${profileError.message}`);
+      }
+
+      // Insert feedback directly using Supabase client
+      const { data: insertedData, error: insertError } = await supabase
+        .from("feedback")
+        .insert({
+          agency_id: profile?.agency_id ?? null,
+          user_id: currentUser.id,
+          category: apiCategory,
+          message: message.trim(),
+          context_data: {
+            subject: subject.trim(),
+          }
+        })
+        .select("id")
+        .single();
+
+      if (insertError) {
+        throw new Error(insertError.message);
+      }
+
+      const insertedId = insertedData?.id;
+      const insertedItem: FeedbackItem = {
+        id: insertedId || `fb-${Date.now()}`,
+        category,
+        subject: subject.trim(),
+        message: message.trim(),
+        author: "you@agency.com",
+        createdAt: new Date().toISOString().split("T")[0],
+        status: "Open",
+        upvotes: 1,
+      };
+
+      // Immediately add the inserted record to list
+      setMyFeedback((prev) => [insertedItem, ...prev]);
+
+      // Clear form and show success
+      setSubject("");
+      setMessage("");
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 4000);
+
+      // Re-fetch to confirm/sync
+      await fetchMyFeedback();
+    } catch (err: any) {
+      console.error("Feedback direct DB insert failed:", err);
+      const msg = err instanceof Error && err.message === "fetch failed"
+        ? "Database connection failed: The database server is unreachable. Please verify NEXT_PUBLIC_SUPABASE_URL is correct and the database is active."
+        : err.message || String(err);
+      alert(`Error submitting feedback: ${msg}`);
+    }
+  };
+
+  const handleUpvote = (id: string) => {
+    setFeedbackList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, upvotes: item.upvotes + 1 } : item))
+    );
+  };
 
  return (
  <div className="p-4 sm:p-8 space-y-8 max-w-[1600px] mx-auto font-sans">
@@ -181,7 +355,7 @@ export default function FeedbackPage() {
 
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap mb-1">
- <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary border-primary/20">
+ <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
  {item.category}
  </span>
  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
@@ -205,6 +379,51 @@ export default function FeedbackPage() {
  ))}
  </div>
  </div>
+ </div>
+
+ {/* My Submitted Feedback Section */}
+ <div className="mt-12 pt-8 border-t border-border space-y-6">
+   <div className="flex items-center gap-3">
+     <Clock className="text-primary" size={20} />
+     <h2 className="text-lg font-bold text-foreground">My Submitted Feedback</h2>
+   </div>
+   
+   {myFeedback.length === 0 ? (
+     <div className="rounded-[20px] border border-dashed border-border p-10 text-center text-[#666666] text-sm">
+       You haven't submitted any feedback yet.
+     </div>
+   ) : (
+     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+       {myFeedback.map((item) => (
+         <div key={item.id} className="bg-card rounded-[20px] border border-border p-5 shadow-xs flex flex-col justify-between gap-4">
+            <div className="space-y-3">
+               <div className="flex items-center justify-between gap-2 flex-wrap">
+                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                   {item.category}
+                 </span>
+                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                   item.status === "Resolved" ? "bg-[#22C55E]/10 text-[#22C55E]" :
+                   item.status === "In Review" ? "bg-[#3B82F6]/10 text-[#3B82F6]" :
+                   "bg-[#F5F5F3] text-[#666666]"
+                 }`}>
+                   {item.status}
+                 </span>
+               </div>
+               
+               <div>
+                 <h3 className="text-sm font-bold text-foreground">{item.subject}</h3>
+                 <p className="text-xs text-[#666666] mt-1 whitespace-pre-wrap leading-relaxed">{item.message}</p>
+               </div>
+            </div>
+            
+            <div className="pt-3 border-t border-border/40 flex items-center justify-between text-[10px] text-[#666666]">
+               <span>Submitted by you</span>
+               <span>{item.createdAt}</span>
+            </div>
+         </div>
+       ))}
+     </div>
+   )}
  </div>
  </div>
  );

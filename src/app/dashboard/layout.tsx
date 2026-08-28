@@ -5,7 +5,7 @@ import FeedbackButton from "@/components/FeedbackButton";
 import PilotBanner from "@/components/PilotBanner";
 import ScrollToTop from "@/components/ScrollToTop";
 import { createClient } from "@/lib/supabase/server";
-import { requireAgency } from "@/lib/auth";
+import { requireAgency, isDummySupabase } from "@/lib/auth";
 import type { ServiceType } from "@/types/search";
 
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
@@ -15,28 +15,42 @@ import { FeedbackProvider } from "@/contexts/FeedbackContext";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await requireAgency();
 
-  const supabase = await createClient();
   const isSuperAdmin = session.role === "super_admin";
 
-  const clientsQuery = isSuperAdmin
-    ? supabase
-        .from("clients")
-        .select("id, name, service_type, agencies(name, display_name)")
-        .order("created_at", { ascending: true })
-    : supabase
-        .from("clients")
-        .select("id, name, service_type")
-        .eq("agency_id", session.agencyId)
-        .order("created_at", { ascending: true });
+  let clients: any[] = [];
+  let agency: any = null;
 
-  const [{ data: clients }, { data: agency }] = await Promise.all([
-    clientsQuery,
-    supabase
-      .from("agencies")
-      .select("max_clients, is_pilot")
-      .eq("id", session.agencyId)
-      .maybeSingle(),
-  ]);
+  if (isDummySupabase()) {
+    clients = [
+      { id: "client-1", name: "Valgrow GEO Client 1", service_type: "geo", agencies: { name: "Valgrow Enterprise", display_name: "Valgrow Enterprise" } },
+      { id: "client-2", name: "Valgrow SEO Client 2", service_type: "seo", agencies: { name: "Valgrow Enterprise", display_name: "Valgrow Enterprise" } },
+    ];
+    agency = { max_clients: 10, is_pilot: false };
+  } else {
+    const supabase = await createClient();
+    const clientsQuery = isSuperAdmin
+      ? supabase
+          .from("clients")
+          .select("id, name, service_type, agencies(name, display_name)")
+          .order("created_at", { ascending: true })
+      : supabase
+          .from("clients")
+          .select("id, name, service_type")
+          .eq("agency_id", session.agencyId)
+          .order("created_at", { ascending: true });
+
+    const [clientsRes, agencyRes] = await Promise.all([
+      clientsQuery,
+      supabase
+        .from("agencies")
+        .select("max_clients, is_pilot")
+        .eq("id", session.agencyId)
+        .maybeSingle(),
+    ]);
+
+    clients = clientsRes.data ?? [];
+    agency = agencyRes.data;
+  }
 
   const isPilot = !agency?.is_pilot;
 

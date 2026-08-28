@@ -31,7 +31,7 @@ export const FullScreenSignup = ({
     return value.length >= 6;
   };
  
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let valid = true;
  
@@ -53,7 +53,7 @@ export const FullScreenSignup = ({
  
     if (valid) {
       if (onLoginSubmit) {
-        onLoginSubmit(email, password);
+        await onLoginSubmit(email, password);
       } else {
         console.log("Form submitted!");
         console.log("Email:", email);

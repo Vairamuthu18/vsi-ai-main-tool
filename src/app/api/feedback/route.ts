@@ -34,6 +34,27 @@ function ratingToCategory(rating: number): Category {
   return "bug";
 }
 
+export async function GET(req: NextRequest) {
+  try {
+    const session = await requireAgency();
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("feedback")
+      .select("*")
+      .eq("user_id", session.userId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[feedback] GET failed:", error.message);
+      return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true, data });
+  } catch (e) {
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : "Failed" }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     let session: { agencyId: string; userId: string } | null = null;
@@ -78,9 +99,8 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (error || !data) {
-        // If Supabase isn't configured, still return success so the UI flow works
         console.warn("[feedback] DB insert failed:", error?.message);
-        return NextResponse.json({ ok: true, id: null });
+        return NextResponse.json({ ok: false, error: error?.message ?? "Database insert failed" }, { status: 500 });
       }
 
       if (session) {
@@ -123,7 +143,7 @@ export async function POST(req: NextRequest) {
 
     if (error || !data) {
       console.warn("[feedback] DB insert failed:", error?.message);
-      return NextResponse.json({ ok: true, id: null });
+      return NextResponse.json({ ok: false, error: error?.message ?? "Database insert failed" }, { status: 500 });
     }
 
     if (session) {

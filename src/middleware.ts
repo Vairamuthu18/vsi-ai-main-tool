@@ -11,6 +11,7 @@ const PUBLIC_PATHS = [
   "/qa",
   "/api/qa",
   "/api/cron",
+  "/api/auth",
   "/auth/callback",
 ];
 
@@ -50,9 +51,20 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const cookieEmail = request.cookies.get("vsi_user_email")?.value
+  let cookieEmail = request.cookies.get("vsi_user_email")?.value
     ? decodeURIComponent(request.cookies.get("vsi_user_email")!.value)
     : null;
+
+  if (cookieEmail) {
+    cookieEmail = cookieEmail.trim();
+    if (cookieEmail.startsWith('"') && cookieEmail.endsWith('"')) {
+      cookieEmail = cookieEmail.slice(1, -1);
+    }
+    if (cookieEmail.startsWith("'") && cookieEmail.endsWith("'")) {
+      cookieEmail = cookieEmail.slice(1, -1);
+    }
+    cookieEmail = cookieEmail.trim();
+  }
 
   const resolvedEmail = user?.email || cookieEmail;
   const hasAuthToken = !!user || request.cookies.has("vsi_session") || request.cookies.has("sb-access-token");
