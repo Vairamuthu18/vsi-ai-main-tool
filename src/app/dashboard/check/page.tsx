@@ -248,20 +248,20 @@ export default function QuickCheckPage() {
   {/* Empty state */}
   {!results && !loading && !error && (
   <div className="flex flex-col items-center justify-center py-20 text-center">
-  <div className="w-16 h-16 rounded-[20px] bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4 shadow-inner">
-  <Search className="w-7 h-7 text-zinc-400" />
+  <div className="w-16 h-16 rounded-[20px] bg-slate-100 border border-slate-200 flex items-center justify-center mb-4 shadow-xs">
+  <Search className="w-7 h-7 text-slate-400" />
   </div>
-  <p className="text-zinc-300 text-sm font-medium">Enter a keyword and domain above to check search rank & AI Mode visibility</p>
+  <p className="text-slate-600 text-sm font-medium">Enter a keyword and domain above to check search rank & AI Mode visibility</p>
   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-10 w-full max-w-xl">
   {[
   { icon: TrendingUp, label: "SERP Position", desc: "Where your client ranks on Google" },
   { icon: Zap, label: "AI Mode", desc: "Is the brand cited in AI answers?" },
   { icon: Globe, label: "Citations", desc: "Who's being cited instead?" },
   ].map(({ icon: Icon, label, desc }) => (
-  <div key={label} className="bg-card border border-border/80 rounded-[20px] p-4 text-left shadow-md hover:border-zinc-700 transition-colors">
+  <div key={label} className="bg-slate-50 border border-slate-200 rounded-[20px] p-4 text-left shadow-xs hover:border-slate-300 transition-colors">
   <Icon className="w-5 h-5 text-amber-500 mb-2" />
-  <p className="text-xs font-bold text-foreground mb-1">{label}</p>
-  <p className="text-[11px] text-zinc-400 leading-snug">{desc}</p>
+  <p className="text-xs font-bold text-slate-900 mb-1">{label}</p>
+  <p className="text-[11px] text-slate-500 leading-snug">{desc}</p>
   </div>
   ))}
   </div>
@@ -273,11 +273,11 @@ export default function QuickCheckPage() {
   <div className="space-y-5">
 
   {/* Gap classification banner */}
-  <div className={`rounded-[20px] border ${gapStyle.border} ${gapStyle.bg} px-6 py-4 flex items-center gap-4 shadow-lg`}>
+  <div className={`rounded-[20px] border ${gapStyle.border} ${gapStyle.bg} px-6 py-4 flex items-center gap-4 shadow-md`}>
   <div className={`w-3 h-3 rounded-full shrink-0 ${gapStyle.dot}`} />
   <div>
-  <p className="text-base font-bold text-foreground">{gap.title}</p>
-  <p className="text-xs text-zinc-300 mt-0.5">{gap.description}</p>
+  <p className="text-base font-bold text-slate-900">{gap.title}</p>
+  <p className="text-xs text-slate-600 mt-0.5">{gap.description}</p>
   </div>
   <span className={`ml-auto text-xs font-bold px-3 py-1 rounded-full ${gapStyle.badge}`}>
   {gap.label.replace(/_/g, " ")}
@@ -287,21 +287,21 @@ export default function QuickCheckPage() {
   {/* SERP + AIO side by side */}
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
   {/* SERP card */}
-  <div className="bg-card border border-border/80 rounded-[20px] p-6 space-y-4 shadow-xl">
+  <div className="bg-card border border-border/80 rounded-[20px] p-6 space-y-4 shadow-lg">
   <div className="flex items-center justify-between">
-  <h3 className="text-xs font-extrabold text-zinc-400 uppercase tracking-wider">Google Ranking</h3>
+  <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Google Ranking</h3>
   <TrendingUp className="w-4 h-4 text-amber-500" />
   </div>
 
   {results.serp.position ? (
   <div className="flex items-baseline gap-3">
-  <span className="text-5xl font-extrabold text-white tracking-tight">#{results.serp.position}</span>
-  <span className="text-sm font-medium text-zinc-400">your client</span>
+  <span className="text-5xl font-extrabold text-slate-900 tracking-tight">#{results.serp.position}</span>
+  <span className="text-sm font-medium text-slate-500">your client</span>
   </div>
   ) : (
   <div className="flex items-center gap-2.5">
   <XCircle className="w-5 h-5 text-rose-500 shrink-0" />
-  <p className="text-sm font-semibold text-zinc-300">Not found in top 100 results</p>
+  <p className="text-sm font-semibold text-slate-700">Not found in top 100 results</p>
   </div>
   )}
 
@@ -311,17 +311,17 @@ export default function QuickCheckPage() {
   <div
   key={r.url}
   className={`flex items-start gap-3 rounded-[16px] px-3.5 py-2.5 transition-all ${
-  r.isClient ? "bg-amber-500/15 border border-amber-500/40 shadow-xs" : "bg-zinc-900/50 border border-zinc-800/80 hover:border-zinc-700"
+  r.isClient ? "bg-amber-500/10 border border-amber-500/30 shadow-xs" : "bg-slate-50 border border-slate-200/80 hover:bg-slate-100/80 hover:border-slate-300"
   }`}
   >
   <span className={`shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-extrabold ${
-  r.isClient ? "bg-amber-500 text-black" : "bg-zinc-800 text-zinc-300 border border-zinc-700"
+  r.isClient ? "bg-amber-500 text-white" : "bg-slate-200 text-slate-700 border border-slate-300"
   }`}>
   {r.position}
   </span>
   <div className="min-w-0 flex-1">
-  <p className={`text-xs font-semibold truncate ${r.isClient ? "text-amber-400 font-bold" : "text-zinc-100"}`}>{r.title}</p>
-  <p className="text-[11px] text-zinc-400 truncate mt-0.5">{r.domain}</p>
+  <p className={`text-xs font-semibold truncate ${r.isClient ? "text-amber-600 font-bold" : "text-slate-800"}`}>{r.title}</p>
+  <p className="text-[11px] text-slate-500 truncate mt-0.5">{r.domain}</p>
   </div>
   </div>
   ))}
@@ -330,10 +330,10 @@ export default function QuickCheckPage() {
 
   {results.serp.serpFeatures.length > 0 && (
   <div className="pt-2 border-t border-border/60">
-  <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">SERP Features</p>
+  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">SERP Features</p>
   <div className="flex flex-wrap gap-1.5">
   {results.serp.serpFeatures.map((f) => (
-  <span key={f} className="rounded-full bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 text-[11px] text-zinc-300 font-medium">
+  <span key={f} className="rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-[11px] text-slate-700 font-medium">
   {f.replace(/_/g, " ")}
   </span>
   ))}
@@ -343,15 +343,15 @@ export default function QuickCheckPage() {
   </div>
 
   {/* AIO card */}
-  <div className="bg-card border border-border/80 rounded-[20px] p-6 space-y-4 shadow-xl">
+  <div className="bg-card border border-border/80 rounded-[20px] p-6 space-y-4 shadow-lg">
   <div className="flex items-center justify-between">
-  <h3 className="text-xs font-extrabold text-zinc-400 uppercase tracking-wider">AI Mode</h3>
+  <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">AI Mode</h3>
   <Zap className="w-4 h-4 text-amber-500" />
   </div>
 
   <div className="flex items-center gap-2.5">
   <span className={`w-2.5 h-2.5 rounded-full ${results.aio.aioPresent ? "bg-emerald-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-rose-500"}`} />
-  <span className="text-sm font-bold text-white">
+  <span className="text-sm font-bold text-slate-900">
   {results.aio.aioPresent ? "AI Mode triggered" : "No AI Mode for this query"}
   </span>
   </div>
@@ -360,15 +360,15 @@ export default function QuickCheckPage() {
   <div className="flex flex-wrap gap-2">
   <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
   results.aio.clientCited
-  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-  : "bg-zinc-900/80 text-zinc-400 border-zinc-800"
+  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+  : "bg-slate-100 text-slate-600 border-slate-200"
   }`}>
   {results.aio.clientCited ? "✓ Cited as source" : "✗ Not a cited source"}
   </span>
   <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
   results.aio.mentionedInText
-  ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-  : "bg-zinc-900/80 text-zinc-400 border-zinc-800"
+  ? "bg-blue-500/10 text-blue-600 border-blue-500/30"
+  : "bg-slate-100 text-slate-600 border-slate-200"
   }`}>
   {results.aio.mentionedInText ? "✓ Mentioned in text" : "✗ Not mentioned in text"}
   </span>
@@ -377,15 +377,15 @@ export default function QuickCheckPage() {
 
   {results.aio.aioBlocks.length > 0 && (
   <div className="space-y-2.5 pt-2 border-t border-border/60">
-  <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">AI Answer Preview</p>
-  <div className="bg-zinc-950/60 border border-zinc-800/80 rounded-[16px] p-4 space-y-2 max-h-64 overflow-y-auto">
+  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">AI Answer Preview</p>
+  <div className="bg-slate-50 border border-slate-200/80 rounded-[16px] p-4 space-y-2 max-h-64 overflow-y-auto">
   {results.aio.aioBlocks.map((block, i) => (
   block.type === "paragraph" ? (
-  <p key={i} className="text-xs text-zinc-200 leading-relaxed font-normal">{block.snippet}</p>
+  <p key={i} className="text-xs text-slate-700 leading-relaxed font-normal">{block.snippet}</p>
   ) : block.type === "list" && block.list ? (
   <ul key={i} className="space-y-1.5 pl-1">
   {block.list.map((item, j) => (
-  <li key={j} className="flex gap-2 text-xs text-zinc-200 leading-relaxed">
+  <li key={j} className="flex gap-2 text-xs text-slate-700 leading-relaxed">
   <span className="text-amber-500 shrink-0 font-bold">•</span>
   <span>{item.snippet}</span>
   </li>
@@ -401,19 +401,19 @@ export default function QuickCheckPage() {
   {results.intelligence && (
   <div className="space-y-3 pt-2 border-t border-border/60">
   <div className="bg-amber-500/10 border border-amber-500/30 rounded-[16px] px-4 py-3">
-  <p className="text-[11px] text-amber-400 font-bold mb-1 uppercase tracking-wider">Insight</p>
-  <p className="text-xs text-zinc-200 leading-relaxed">{results.intelligence.insight}</p>
+  <p className="text-[11px] text-amber-600 font-bold mb-1 uppercase tracking-wider">Insight</p>
+  <p className="text-xs text-slate-700 leading-relaxed">{results.intelligence.insight}</p>
   </div>
-  <div className="bg-zinc-900/80 border border-zinc-800 rounded-[16px] px-4 py-3">
-  <p className="text-[11px] text-zinc-400 font-bold mb-1 uppercase tracking-wider">Recommended Action</p>
-  <p className="text-xs text-zinc-300 leading-relaxed">{results.intelligence.recommendedAction}</p>
+  <div className="bg-slate-50 border border-slate-200 rounded-[16px] px-4 py-3">
+  <p className="text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-wider">Recommended Action</p>
+  <p className="text-xs text-slate-700 leading-relaxed">{results.intelligence.recommendedAction}</p>
   </div>
   <div className="flex flex-wrap gap-2">
   {results.intelligence.brandMentioned !== undefined && (
   <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
   results.intelligence.brandMentioned
-  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-  : "bg-zinc-900 text-zinc-400 border-zinc-800"
+  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+  : "bg-slate-100 text-slate-600 border-slate-200"
   }`}>
   {results.intelligence.brandMentioned ? "✓ Brand mentioned" : "✗ Brand not mentioned"}
   </span>
@@ -425,7 +425,7 @@ export default function QuickCheckPage() {
   {analyzing && !results.intelligence && (
   <div className="space-y-2 pt-2">
   {[...Array(3)].map((_, i) => (
-  <div key={i} className="h-3 rounded-full bg-zinc-800 animate-pulse" style={{ width: `${70 + i * 10}%` }} />
+  <div key={i} className="h-3 rounded-full bg-slate-200 animate-pulse" style={{ width: `${70 + i * 10}%` }} />
   ))}
   </div>
   )}
@@ -439,10 +439,10 @@ export default function QuickCheckPage() {
 
   {/* Citations */}
   {results.aio.aioPresent && results.aio.citations.length > 0 && (
-  <div className="bg-card border border-border/80 rounded-[20px] p-6 shadow-xl">
+  <div className="bg-card border border-border/80 rounded-[20px] p-6 shadow-lg">
   <div className="flex items-center justify-between mb-4">
-  <h3 className="text-xs font-extrabold text-zinc-400 uppercase tracking-wider">AI Mode Citations</h3>
-  <span className="text-xs font-semibold text-zinc-400">{results.aio.citations.length} sources cited</span>
+  <h3 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">AI Mode Citations</h3>
+  <span className="text-xs font-semibold text-slate-500">{results.aio.citations.length} sources cited</span>
   </div>
   <div className="space-y-2.5">
   {results.aio.citations.map((c) => {
@@ -461,8 +461,8 @@ export default function QuickCheckPage() {
   </div>
   {!results.aio.clientCited && (
   <div className="mt-4 bg-amber-500/10 border border-amber-500/30 rounded-[16px] px-4 py-3">
-  <p className="text-xs text-amber-300 leading-relaxed font-medium">
-  <span className="font-bold text-amber-400">{results.aio.citations.length} competitor{results.aio.citations.length !== 1 ? "s" : ""}</span> are cited while your client is not.
+  <p className="text-xs text-amber-800 leading-relaxed font-medium">
+  <span className="font-bold text-amber-700">{results.aio.citations.length} competitor{results.aio.citations.length !== 1 ? "s" : ""}</span> are cited while your client is not.
   {results.aio.mentionedInText && " The brand is mentioned in the answer text but holds no source link."}
   </p>
   </div>

@@ -30,6 +30,16 @@ export async function POST(req: NextRequest) {
       "uk": "uk",
       "India": "in",
       "in": "in",
+      "Sri Lanka": "lk",
+      "lk": "lk",
+      "Canada": "ca",
+      "ca": "ca",
+      "Australia": "au",
+      "au": "au",
+      "Germany": "de",
+      "de": "de",
+      "Singapore": "sg",
+      "sg": "sg",
     };
 
     const gl = glMap[location || ""] || "ae";

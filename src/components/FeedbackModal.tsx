@@ -289,22 +289,56 @@ export default function FeedbackModal({ open, onClose }: FeedbackModalProps) {
       }
 
       const ratingCategory = (() => {
-        if (rating >= 4) return "praise";
+        if (rating !== null && rating >= 4) return "praise";
         if (rating === 3) return "general";
         return "bug";
       })();
 
-      const { data: insertedData, error: insertError } = await supabase
+      const contextDataObj = {
+        rating: rating ?? null,
+        device: device ?? null,
+        os: os ?? null,
+        screen: screen ?? null,
+        viewport: viewport ?? null,
+        timezone: timezone ?? null,
+        theme: resolvedTheme ?? null,
+        timestamp: new Date().toISOString(),
+        attachment_name: attachmentName ?? null,
+      };
+
+      const fullPayload = {
+        agency_id: profileAgencyId,
+        user_id: user?.id ?? null,
+        category: ratingCategory,
+        rating: rating !== null ? String(rating) : null,
+        subject: comment.trim().slice(0, 100) || null,
+        message: comment.trim(),
+        attachment_url: attachmentName ?? null,
+        page_url: pathname ?? null,
+        user_agent: browser ?? null,
+        context_data: contextDataObj,
+        status: "new",
+      };
+
+      let { data: insertedData, error: insertError } = await supabase
         .from("feedback")
-        .insert({
-          agency_id: profileAgencyId,
-          user_id: user?.id ?? null,
-          category: ratingCategory,
-          message: comment.trim(),
-          page_url: pathname,
-          user_agent: browser,
-          context_data: {
+        .insert(fullPayload)
+        .select("id")
+        .single();
+
+      // If client-side direct insert fails (e.g., anon key permissions), try API route
+      if (insertError) {
+        console.warn("Direct Supabase insert returned error, calling /api/feedback API fallback:", insertError.message);
+        const res = await fetch("/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             rating,
+            comment: comment.trim(),
+            attachment_name: attachmentName,
+            attachment_data: attachmentData,
+            page: pathname,
+            browser,
             device,
             os,
             screen,
@@ -312,14 +346,16 @@ export default function FeedbackModal({ open, onClose }: FeedbackModalProps) {
             timezone,
             theme: resolvedTheme,
             timestamp: new Date().toISOString(),
-            attachment_name: attachmentName,
-          }
-        })
-        .select("id")
-        .single();
-
-      if (insertError) {
-        throw new Error(insertError.message);
+            category: ratingCategory,
+            message: comment.trim(),
+            page_url: pathname,
+            context_data: contextDataObj,
+          }),
+        });
+        const apiRes = await res.json();
+        if (!res.ok || !apiRes.ok) {
+          throw new Error(apiRes.error || insertError.message || "Failed to submit feedback");
+        }
       }
 
       setToast({ message: "Thank you! Your feedback has been submitted successfully.", type: "success" });

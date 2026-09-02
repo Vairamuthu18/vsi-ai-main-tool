@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { 
   LayoutDashboard, Search, Plus, LogOut, ShieldCheck, Menu, Settings, 
   CheckSquare, ChevronRight, Users, Terminal, MessageSquare, Sun, Moon,
-  Sparkles, Layers, PanelLeftClose, PanelLeftOpen
+  Sparkles, Layers, PanelLeftClose, PanelLeftOpen, FileText, PieChart, HelpCircle, TrendingUp
 } from "lucide-react";
 import { SERVICE_TYPE_LABELS, ServiceType } from "@/types/search";
 import type { UserRole } from "@/lib/auth";
@@ -35,25 +35,44 @@ interface Props {
 
 const navGroups = [
   {
-    title: "MAIN NAVIGATION",
+    title: "MAIN",
     items: [
-      { href: "/dashboard", label: "Overview", Icon: LayoutDashboard },
-      { href: "/dashboard/check", label: "Quick Diagnostics", Icon: Search },
-      { href: "/dashboard/competitors", label: "Competitor Benchmark", Icon: Users },
+      { href: "/dashboard", label: "Overview", tooltip: "Dashboard command center", Icon: LayoutDashboard },
+      { href: "/dashboard/research", label: "Find Keywords", tooltip: "Discover keywords people search for", Icon: Search },
+      { href: "/dashboard/check?tab=diagnostics", label: "SEO Checkup", tooltip: "Find SEO problems on your website", Icon: ShieldCheck },
+      { href: "/dashboard/competitors", label: "Competitors", tooltip: "Compare your website with competitors", Icon: Users },
+      { href: "/dashboard/tasks", label: "Rank Tracking", tooltip: "Track your Google rankings", Icon: CheckSquare },
     ],
   },
   {
-    title: "AI INTELLIGENCE",
+    title: "AI SEARCH",
     items: [
-      { href: "/dashboard/tasks", label: "Tasks & Audits", Icon: CheckSquare },
-      { href: "/dashboard/prompts", label: "AI Prompt Manager", Icon: Terminal },
+      { href: "/dashboard/check?tab=aivisibility", label: "AI Visibility", tooltip: "See how often AI mentions your brand", Icon: Sparkles },
+      { href: "/dashboard/prompts", label: "AI Prompts", tooltip: "Explore questions people ask AI", Icon: Terminal },
+      { href: "/dashboard/prompts?tab=mentions", label: "Brand Mentions", tooltip: "Track AI mentions of your brand", Icon: Layers },
+      { href: "/dashboard/check?tab=citations", label: "Citation Analysis", tooltip: "See sources AI relies on", Icon: FileText },
     ],
   },
   {
-    title: "SUPPORT & SYSTEM",
+    title: "REPORTS",
     items: [
-      { href: "/dashboard/feedback", label: "Feedback & Requests", Icon: MessageSquare },
-      { href: "/dashboard/settings", label: "Settings", Icon: Settings },
+      { href: "/dashboard/clients", label: "Reports", tooltip: "View client & project SEO reports", Icon: PieChart },
+      { href: "/dashboard/tasks", label: "Tasks & Audits", tooltip: "SEO to-do list & site audits", Icon: CheckSquare },
+    ],
+  },
+  {
+    title: "CLIENTS",
+    items: [
+      { href: "/dashboard/clients", label: "My Clients", tooltip: "Manage SEO projects for clients", Icon: Users },
+      { href: "/dashboard/clients/new", label: "Add Client", tooltip: "Create a new client project", Icon: Plus },
+    ],
+  },
+  {
+    title: "SUPPORT",
+    items: [
+      { href: "/dashboard/feedback", label: "Feedback", tooltip: "Share feedback or feature requests", Icon: MessageSquare },
+      { href: "/dashboard/messages", label: "Help Center", tooltip: "Get help & view system messages", Icon: HelpCircle },
+      { href: "/dashboard/settings", label: "Settings", tooltip: "Manage agency profile & settings", Icon: Settings },
     ],
   },
 ];
@@ -253,13 +272,13 @@ export default function Sidebar({
               <p className="px-2 text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">{group.title}</p>
             )}
             <div className="space-y-1">
-              {group.items.map(({ href, label, Icon }) => {
+              {group.items.map(({ href, label, tooltip, Icon }) => {
                 const active = isActive(href);
                 return (
                   <Link
                     key={href}
                     href={href}
-                    title={isCollapsed ? label : undefined}
+                    title={tooltip || label}
                     className={`flex items-center ${isCollapsed ? "justify-center p-2.5" : "justify-between gap-2.5 px-4 py-2.5"} rounded-[14px] text-xs transition-all ${
                       active
                         ? "bg-amber-500 text-white font-bold shadow-sm"
@@ -336,16 +355,6 @@ export default function Sidebar({
                       {userRole.replace("_", " ")}
                     </p>
                   </div>
-
-                  {/* Theme Toggle Icon Button */}
-                  <button
-                    onClick={toggleTheme}
-                    type="button"
-                    className="p-1.5 rounded-lg bg-card border border-border text-muted-foreground hover:text-primary transition-colors shadow-2xs shrink-0 cursor-pointer"
-                    title="Toggle Light/Dark Theme"
-                  >
-                    {resolvedTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-                  </button>
                 </div>
 
                 <button
@@ -358,15 +367,6 @@ export default function Sidebar({
               </>
             ) : (
               <>
-                <button
-                  onClick={toggleTheme}
-                  type="button"
-                  className="p-2 rounded-lg bg-card border border-border text-muted-foreground hover:text-primary transition-colors shadow-2xs cursor-pointer"
-                  title="Toggle Light/Dark Theme"
-                >
-                  {resolvedTheme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-                </button>
-
                 <button
                   onClick={handleSignOut}
                   type="button"

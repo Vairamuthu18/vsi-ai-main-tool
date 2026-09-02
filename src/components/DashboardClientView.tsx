@@ -2,793 +2,580 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
- Sparkles, TrendingUp, Award, Eye, Globe, AlertTriangle, Download, 
- Calendar, Filter, Plus, ChevronRight, CheckCircle2, ShieldCheck, 
- Cpu, MessageSquare, BarChart3, PieChart, ArrowUpRight, ArrowDownRight,
- Smile, ShieldAlert, Zap, Layers, RefreshCw, ExternalLink, Activity
+  Sparkles, Search, ChevronDown, Info, ExternalLink, Globe, MapPin, 
+  TrendingUp, BarChart3, ShieldCheck, ArrowRight, CheckCircle2, RefreshCw, 
+  HelpCircle, Layers, PieChart, Users, Cpu, FileText
 } from "lucide-react";
-import TrajectoryChart from "@/components/TrajectoryChart";
-import { Dropdown } from "@/components/Dropdown";
-import ServiceFilterDropdown from "@/components/ServiceFilterDropdown";
-import { downloadCSV, exportPrintablePDF, ExportDataRow } from "@/utils/export";
-import { SERVICE_TYPE_LABELS, ServiceType } from "@/types/search";
 import { useTheme } from "@/components/ThemeProvider";
 
 interface ClientRecord {
- id: string;
- name: string;
- service_type: string;
- website: string;
- agency_id: string;
- agencies?: { name?: string | null; display_name?: string | null } | { name?: string | null; display_name?: string | null }[] | null;
+  id: string;
+  name: string;
+  service_type: string;
+  website: string;
+  agency_id: string;
+  agencies?: { name?: string | null; display_name?: string | null } | { name?: string | null; display_name?: string | null }[] | null;
 }
 
 interface ResultRecord {
- client_id: string;
- keyword: string;
- track_type: string;
- gap_label: string;
- rank_position?: number | null;
- aio_present?: boolean | null;
- client_cited?: boolean | null;
- mentioned_in_text?: boolean | null;
- created_at: string;
+  client_id: string;
+  keyword: string;
+  track_type: string;
+  gap_label: string;
+  rank_position?: number | null;
+  aio_present?: boolean | null;
+  client_cited?: boolean | null;
+  mentioned_in_text?: boolean | null;
+  created_at: string;
 }
 
 interface DashboardClientViewProps {
- isSuperAdmin: boolean;
- clientList: ClientRecord[];
- keywordCount: number;
- rawResults: ResultRecord[];
- maxClients?: number | null;
+  isSuperAdmin: boolean;
+  clientList: ClientRecord[];
+  keywordCount: number;
+  rawResults: ResultRecord[];
+  maxClients?: number | null;
 }
 
 export default function DashboardClientView({
- isSuperAdmin,
- clientList,
- keywordCount,
- rawResults,
- maxClients,
+  isSuperAdmin,
+  clientList,
+  keywordCount,
+  rawResults,
+  maxClients,
 }: DashboardClientViewProps) {
-main
+  const router = useRouter();
   const { theme } = useTheme();
   const isDark = theme === "dark";
-main
-  const [dateRange, setDateRange] = useState("30d");
-  const [serviceFilter, setServiceFilter] = useState("all");
 
-  const nowMs = Date.now();
-  const rangeMsMap: Record<string, number> = {
-    "7d": 7 * 86400000,
-    "30d": 30 * 86400000,
-    "90d": 90 * 86400000,
+  // Form states for top search header
+  const [searchQuery, setSearchQuery] = useState("");
+  const [language, setLanguage] = useState("English");
+  const [location, setLocation] = useState("India");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setIsAnalyzing(true);
+    router.push(
+      `/dashboard/research?q=${encodeURIComponent(searchQuery.trim())}&lang=${encodeURIComponent(language)}&loc=${encodeURIComponent(location)}`
+    );
   };
 
-  const filteredRawResults = rawResults.filter((r) => {
-    // 1. Date Range Filter
-    if (dateRange !== "all" && rangeMsMap[dateRange] && r.created_at) {
-      const itemMs = new Date(r.created_at).getTime();
-      if (nowMs - itemMs > rangeMsMap[dateRange]) return false;
-    }
-    // 2. Service Filter
-    if (serviceFilter !== "all") {
-      if (r.track_type !== serviceFilter && r.track_type !== "both") return false;
-    }
-    return true;
-  });
+  const handleQuickTry = (example: string) => {
+    router.push(
+      `/dashboard/research?q=${encodeURIComponent(example)}&lang=${encodeURIComponent(language)}&loc=${encodeURIComponent(location)}`
+    );
+  };
 
-  // Deduplicate to latest snapshot per (client, keyword, track_type)
-  const seenKw = new Set<string>();
-  const results = filteredRawResults.filter((r) => {
-    const k = `${r.client_id}::${r.keyword}::${r.track_type}`;
-    if (seenKw.has(k)) return false;
-    seenKw.add(k);
-    return true;
-  });
+  return (
+    <div className="p-4 sm:p-8 space-y-8 max-w-[1600px] mx-auto font-sans transition-colors bg-[#F8FAFC] min-h-screen">
+      
+      {/* ── 1. Dashboard Hero Section ── */}
+      <div className="bg-[#FFF5F2] border border-[#FFE4DA] rounded-3xl p-6 sm:p-10 shadow-xs relative overflow-hidden space-y-6">
+        {/* Decorative ambient glow */}
+        <div className="absolute -right-12 -bottom-12 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
 
- const clientMap = new Map(clientList.map((c) => [c.id, c]));
+        {/* Hero Title & Subtitle */}
+        <div className="relative z-10 max-w-3xl space-y-2">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-foreground tracking-tight leading-tight">
+            Grow Your Website with Smarter SEO
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-relaxed">
+            Find the right keywords, understand your competitors, track your rankings, and see how AI search engines discover your brand — all in one place.
+          </p>
+        </div>
 
- // Calculate Key Metrics
- const gapCounts = results.reduce((acc, r) => {
- acc[r.gap_label as string] = (acc[r.gap_label as string] ?? 0) + 1;
- return acc;
- }, {} as Record<string, number>);
+        {/* Primary Search Card Container */}
+        <div className="relative z-10 bg-white border border-border/80 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <Search size={14} className="text-[#FF5A1F]" />
+              Start your SEO Research
+            </h2>
+            <Link
+              href="/dashboard/research"
+              className="text-xs font-bold text-[#FF5A1F] hover:underline flex items-center gap-1"
+            >
+              Bulk Keyword Analysis →
+            </Link>
+          </div>
 
- const winning = (gapCounts["aligned"] ?? 0)
- + (gapCounts["geo_cited"] ?? 0)
- + (gapCounts["seo_ranked"] ?? 0)
- + (gapCounts["seo_ranked_no_aio"] ?? 0);
+          <form onSubmit={handleSearchSubmit} className="flex flex-col lg:flex-row items-stretch lg:items-end gap-3.5">
+            {/* Search Input Box */}
+            <div className="flex-1 min-w-[280px] relative">
+              <label className="block text-[11px] font-bold text-foreground mb-1">
+                Keyword / Website <span className="text-red-500">*</span>
+              </label>
+              <div className="relative flex items-center">
+                <Search size={18} className="absolute left-4 text-muted-foreground pointer-events-none bg-transparent" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Enter a keyword or website..."
+                  className="w-full pl-11 pr-4 py-3 bg-white border border-border rounded-xl text-foreground text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30 focus:border-[#FF5A1F] shadow-2xs transition-all"
+                />
+              </div>
+            </div>
 
- const mentioned = (gapCounts["ai_mentioned"] ?? 0)
- + (gapCounts["geo_mentioned"] ?? 0)
- + (gapCounts["aligned_no_mention"] ?? 0)
- + (gapCounts["geo_cited_no_mention"] ?? 0);
+            {/* Language Selector */}
+            <div className="w-full lg:w-44 space-y-1">
+              <label className="block text-[11px] font-bold text-foreground">
+                Language <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="w-full appearance-none bg-white border border-border rounded-xl px-4 py-3 text-sm font-medium text-foreground pr-8 focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30 focus:border-[#FF5A1F] shadow-2xs cursor-pointer"
+                >
+                  <option value="English">English</option>
+                  <option value="Spanish">Spanish</option>
+                  <option value="French">French</option>
+                  <option value="German">German</option>
+                  <option value="Tamil">Tamil</option>
+                  <option value="Hindi">Hindi</option>
+                  <option value="Sinhala">Sinhala</option>
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none bg-transparent" />
+              </div>
+            </div>
 
- const invisible = (gapCounts["search_strong_ai_invisible"] ?? 0)
- + (gapCounts["geo_invisible"] ?? 0);
+            {/* Location Selector */}
+            <div className="w-full lg:w-52 space-y-1">
+              <label className="block text-[11px] font-bold text-foreground">
+                Location <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full appearance-none bg-white border border-border rounded-xl px-4 py-3 text-sm font-medium text-foreground pr-8 focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30 focus:border-[#FF5A1F] shadow-2xs cursor-pointer"
+                >
+                  <option value="India">🇮🇳 India</option>
+                  <option value="United States">🇺🇸 United States</option>
+                  <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                  <option value="Canada">🇨🇦 Canada</option>
+                  <option value="Australia">🇦🇺 Australia</option>
+                  <option value="Germany">🇩🇪 Germany</option>
+                  <option value="Singapore">🇸🇬 Singapore</option>
+                  <option value="Sri Lanka">🇱🇰 Sri Lanka</option>
+                  <option value="UAE">🇦🇪 UAE</option>
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none bg-transparent" />
+              </div>
+            </div>
 
- const losing = (gapCounts["weak_double_loss"] ?? 0)
- + (gapCounts["seo_not_ranked"] ?? 0);
+            {/* Primary CTA */}
+            <button
+              type="submit"
+              disabled={isAnalyzing}
+              className="bg-[#FF5A1F] hover:bg-[#E54E17] text-white font-bold px-7 py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 text-sm shrink-0 cursor-pointer disabled:opacity-70 active:scale-95 shadow-[#FF5A1F]/20"
+            >
+              <Sparkles size={16} className={isAnalyzing ? "animate-spin text-white" : "animate-pulse text-white"} />
+              <span>{isAnalyzing ? "Analyzing..." : "Start Research"}</span>
+            </button>
+          </form>
 
- const totalTracked = results.length || keywordCount || 1;
- const totalAIMentions = winning + mentioned;
- const winPercent = ((winning / totalTracked) * 100).toFixed(0);
- const mentionPercent = ((mentioned / totalTracked) * 100).toFixed(0);
- const invisiblePercent = ((invisible / totalTracked) * 100).toFixed(0);
- const losingPercent = ((losing / totalTracked) * 100).toFixed(0);
+          {/* Quick Example Chips */}
+          <div className="flex items-center gap-2 flex-wrap pt-1 text-xs">
+            <span className="text-muted-foreground font-semibold">Try searching:</span>
+            {[
+              "digital marketing agency",
+              "best SEO agency in Dubai",
+              "web development company"
+            ].map((example) => (
+              <button
+                key={example}
+                type="button"
+                onClick={() => handleQuickTry(example)}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-[#FF5A1F]/10 text-slate-700 hover:text-[#FF5A1F] border border-slate-200 transition-colors font-medium cursor-pointer text-[11px]"
+              >
+                Try: {example}
+              </button>
+            ))}
+          </div>
 
- const aiVisibilityScore = results.length > 0 ? (((winning + mentioned) / totalTracked) * 100).toFixed(1) : "0.0";
- const googleRankingOverviewCount = results.filter((r) => r.rank_position && r.rank_position <= 10).length;
-
- // Handle Export CSV
- const handleExportCSV = () => {
- const exportRows: ExportDataRow[] = results.map((r) => {
- const client = clientMap.get(r.client_id);
- return {
- keyword: r.keyword,
- clientName: client?.name || "Unknown Domain",
- trackType: r.track_type,
- rankPosition: r.rank_position,
- aioPresent: !!r.aio_present,
- classification: r.gap_label,
- createdAt: r.created_at,
- };
- });
- downloadCSV("SearchIntel_AI_Visibility_Report", exportRows);
- };
-
- // Handle Export PDF
- const handleExportPDF = () => {
- const exportRows: ExportDataRow[] = results.map((r) => {
- const client = clientMap.get(r.client_id);
- return {
- keyword: r.keyword,
- clientName: client?.name || "Unknown Domain",
- trackType: r.track_type,
- rankPosition: r.rank_position,
- aioPresent: !!r.aio_present,
- classification: r.gap_label,
- createdAt: r.created_at,
- };
- });
- exportPrintablePDF("AI Search Citation & Performance Report", exportRows);
- };
-
- return (
- <div className="p-4 sm:p-8 space-y-8 max-w-[1600px] mx-auto font-sans transition-colors bg-background min-h-screen">
- {/* ── Top Header & Global Toolbar ── */}
- <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 pb-6 border-b border-border/80 ">
- <div>
- <div className="flex items-center gap-3">
- <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground text-foreground tracking-tight">
- AI Search Intelligence
- </h1>
- {isSuperAdmin && (
- <span className="rounded-full px-[14px] py-[6px] bg-primary/10 border border-[#FFD5C8] text-primary px-3 py-0.5 text-xs font-bold uppercase tracking-wider shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)]">
- Super Admin Scope
- </span>
- )}
- </div>
- <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
- Real-time generative AI citation monitoring, sentiment tracking, and competitive search analysis.
- </p>
- </div>
-
- {/* Global Toolbar Controls */}
- <div className="flex flex-wrap items-center gap-3">
-  <Dropdown
-    variant="date-range"
-    value={dateRange}
-    onChange={setDateRange}
-    options={[
-      { value: "30d", label: "Last 30 Days" },
-      { value: "7d", label: "Last 7 Days" },
-      { value: "90d", label: "Last 90 Days" },
-      { value: "all", label: "All Time" }
-    ]}
-    trigger={
-      <div className="flex items-center gap-2 bg-card border border-border/80 rounded-full px-[14px] py-[6px] px-4 py-2 text-xs font-semibold text-foreground shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] outline-none">
-        <Calendar size={14} className="text-muted-foreground" />
-        <span>Date Range:</span>
-        <div className="flex items-center gap-1 font-bold text-foreground cursor-pointer">
-          <span>
-            {dateRange === "30d" ? "Last 30 Days" : 
-             dateRange === "7d" ? "Last 7 Days" : 
-             dateRange === "90d" ? "Last 90 Days" : "All Time"}
-          </span>
+          {/* Beginner Hint Box */}
+          <div className="p-3 bg-[#FFF5F2] border border-[#FFE4DA] rounded-xl flex items-center gap-2 text-xs text-slate-700">
+            <span className="text-base shrink-0">💡</span>
+            <p className="font-medium">
+              <strong>Not sure what to search?</strong> Enter a keyword related to your business and we&apos;ll do the rest.
+            </p>
+          </div>
         </div>
       </div>
-    }
-  />
 
- {/* Search Filters */}
-  <ServiceFilterDropdown
-    currentValue={serviceFilter as "all" | "seo" | "geo"}
-    onSelect={(val) => setServiceFilter(val)}
-  />
+      {/* ── 2. Command Center Overview Section ── */}
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+            Welcome to SearchIntel
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+            Let&apos;s improve your website visibility.
+          </p>
+        </div>
 
- {/* Export Report Actions */}
- <div className="flex items-center gap-2">
- <button
- onClick={handleExportCSV}
- type="button"
- className="flex items-center gap-2 rounded-full px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
- title="Download CSV report"
- >
- <Download size={14} />
- <span>CSV</span>
- </button>
+        {/* 4 Simple Action Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Find Keywords */}
+          <div className="bg-white border border-border rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-amber-500/50 transition-all">
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-[#FF5A1F] flex items-center justify-center font-bold">
+                <Search size={20} />
+              </div>
+              <h3 className="text-base font-bold text-foreground">Find Keywords</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                Discover keywords your customers are searching for.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/research"
+              className="inline-flex items-center text-xs font-bold text-[#FF5A1F] hover:underline"
+            >
+              Find Keywords →
+            </Link>
+          </div>
 
- <button
- onClick={handleExportPDF}
- type="button"
- className="flex items-center gap-2 rounded-full px-4 py-2 bg-card border border-border text-foreground hover:bg-muted text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
- title="Export Printable PDF report"
- >
- <Download size={14} />
- <span>PDF Report</span>
- </button>
- </div>
- </div>
- </div>
+            {/* Card 2: Check Your Website */}
+            <div className="bg-white border border-border rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-amber-500/50 transition-all">
+              <div className="space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold">
+                  <ShieldCheck size={20} />
+                </div>
+                <h3 className="text-base font-bold text-foreground">Check Your Website</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                  Find SEO problems that may be hurting your rankings.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/check?tab=diagnostics"
+                className="inline-flex items-center text-xs font-bold text-blue-600 hover:underline"
+              >
+                Run SEO Check →
+              </Link>
+            </div>
 
- {/* ── Section 1: 6 Core Enterprise Analytics Cards Grid ── */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-  {/* Card 1: AI Visibility Score */}
-  <div className="bg-card rounded-[20px] p-5 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] hover:border-primary/50 hover:shadow-md transition-all">
-  <div className="flex items-center justify-between mb-3">
-  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-  AI Visibility Score
-  </span>
-  <span className="p-2 rounded-[20px] bg-orange-50 text-orange-600">
-  <Sparkles size={16} />
-  </span>
-  </div>
-  <div className="flex items-baseline flex-wrap gap-1.5">
-  <span className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-  {aiVisibilityScore}%
-  </span>
-  <span className="text-xs font-bold text-[#22C55E] flex items-center whitespace-nowrap">
-  +4.1% <ArrowUpRight size={12} className="ml-0.5" />
-  </span>
-  </div>
-  <p className="text-[11px] text-muted-foreground mt-2 font-medium">
-  Weighted AI share of voice
-  </p>
-  </div>
+            {/* Card 3: Check Your Competitors */}
+            <div className="bg-white border border-border rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-amber-500/50 transition-all">
+              <div className="space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+                  <Users size={20} />
+                </div>
+                <h3 className="text-base font-bold text-foreground">Check Your Competitors</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                  See what your competitors are doing better.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/competitors"
+                className="inline-flex items-center text-xs font-bold text-emerald-600 hover:underline"
+              >
+                Compare Competitors →
+              </Link>
+            </div>
 
-  {/* Card 2: Total Mentions */}
-  <div className="bg-card rounded-[20px] p-5 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] hover:border-primary/50 hover:shadow-md transition-all">
-  <div className="flex items-center justify-between mb-3">
-  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-  Total AI Mentions
-  </span>
-  <span className="p-2 rounded-[20px] bg-[#F0FDF4] text-[#22C55E]">
-  <Award size={16} />
-  </span>
-  </div>
-  <div className="flex items-baseline flex-wrap gap-1.5">
-  <span className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-  {totalAIMentions}
-  </span>
-  <span className="text-xs font-bold text-[#22C55E] flex items-center whitespace-nowrap">
-  +18.2% <ArrowUpRight size={12} className="ml-0.5" />
-  </span>
-  </div>
-  <p className="text-[11px] text-muted-foreground mt-2 font-medium">
-  Direct citations & text mentions
-  </p>
-  </div>
+            {/* Card 4: Check AI Visibility */}
+            <div className="bg-white border border-border rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-amber-500/50 transition-all">
+              <div className="space-y-2">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold">
+                  <Sparkles size={20} />
+                </div>
+                <h3 className="text-base font-bold text-foreground">Check AI Visibility</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                  See whether ChatGPT and other AI search engines mention your brand.
+                </p>
+              </div>
+              <Link
+                href="/dashboard/prompts"
+                className="inline-flex items-center text-xs font-bold text-purple-600 hover:underline"
+              >
+                Check AI Visibility →
+              </Link>
+            </div>
+          </div>
 
-  {/* Card 3: Search Queries */}
-  <div className="bg-card rounded-[20px] p-5 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] hover:border-primary/50 hover:shadow-md transition-all">
-  <div className="flex items-center justify-between mb-3">
-  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-  Search Queries
-  </span>
-  <span className="p-2 rounded-[20px] bg-purple-50 text-purple-600">
-  <BarChart3 size={16} />
-  </span>
-  </div>
-  <div className="flex items-baseline flex-wrap gap-1.5">
-  <span className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-  {totalTracked}
-  </span>
-  <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">
-  queries
-  </span>
-  </div>
-  <p className="text-[11px] text-muted-foreground mt-2 font-medium">
-  Active keyword prompts monitored
-  </p>
-  </div>
+          <div className="pt-2">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight mb-4">
+              AI-powered keyword research
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            
+            {/* ── CARD 1: Find secret SEO gems ── */}
+            <div className="bg-white border border-border rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs flex flex-col justify-between hover:border-border/80 transition-all">
+              <div className="space-y-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                  Find secret SEO gems
+                </h2>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                  Search and find suggestions of high-potential keywords with the perfect balance of search volume and low competition.
+                </p>
+              </div>
 
-  {/* Card 4: AI Engines Covered / Indexed Pages */}
-  <div className="bg-card rounded-[20px] p-5 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] hover:border-primary/50 hover:shadow-md transition-all">
-  <div className="flex items-center justify-between mb-3">
-  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-  AI Engines Covered
-  </span>
-  <span className="p-2 rounded-[20px] bg-indigo-50 text-indigo-600">
-  <Cpu size={16} />
-  </span>
-  </div>
-  <div className="flex items-baseline flex-wrap gap-1.5">
-  <span className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-  5/5
-  </span>
-  <span className="text-xs font-bold text-[#22C55E] whitespace-nowrap">Active</span>
-  </div>
-  <p className="text-[11px] text-muted-foreground mt-2 font-medium truncate">
-  AIO, ChatGPT, Gemini, Perplexity, Claude
-  </p>
-  </div>
+              {/* Graphic Canvas Box */}
+              <div className="bg-[#EAF8F6] dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl p-5 relative overflow-hidden min-h-[300px] flex items-center justify-center">
+                {/* Background organic shape */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-emerald-200/40 via-teal-100/30 to-transparent dark:from-emerald-900/20 dark:via-transparent rounded-2xl" />
 
-  {/* Card 5: Competitor Score */}
-  <div className="bg-card rounded-[20px] p-5 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] hover:border-primary/50 hover:shadow-md transition-all">
-  <div className="flex items-center justify-between mb-3">
-  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-  Competitor Score
-  </span>
-  <span className="p-2 rounded-[20px] bg-amber-50 text-amber-600">
-  <TrendingUp size={16} />
-  </span>
-  </div>
-  <div className="flex items-baseline flex-wrap gap-1.5">
-  <span className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-  +14.3%
-  </span>
-  <span className="text-xs font-bold text-[#22C55E] whitespace-nowrap">vs Industry</span>
-  </div>
-  <p className="text-[11px] text-muted-foreground mt-2 font-medium">
-  Lead over top 3 competitors
-  </p>
-  </div>
+                <div className="relative z-10 w-full grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  
+                  {/* Search Volume Box */}
+                  <div className="sm:col-span-1 bg-white dark:bg-card border border-border/80 rounded-2xl p-4 shadow-md space-y-2">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1.5 font-bold text-foreground">
+                        <span className="w-4 h-4 rounded-full bg-blue-500 text-white font-bold flex items-center justify-center text-[10px]">G</span>
+                        <span>Search Volume</span>
+                      </div>
+                      <Info size={13} className="text-muted-foreground" />
+                    </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-2xl font-extrabold text-foreground">9,9M</span>
+                      <span className="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">
+                        HIGH
+                      </span>
+                    </div>
 
-  {/* Card 6: Brand Sentiment */}
-  <div className="bg-card rounded-[20px] p-5 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] hover:border-primary/50 hover:shadow-md transition-all">
-  <div className="flex items-center justify-between mb-3">
-  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-  Brand Sentiment
-  </span>
-  <span className="p-2 rounded-[20px] bg-[#F0FDF4] text-[#22C55E]">
-  <Smile size={16} />
-  </span>
-  </div>
-  <div className="flex items-baseline flex-wrap gap-1.5">
-  <span className="text-2xl sm:text-3xl font-extrabold text-[#22C55E] tracking-tight">
-  94.2%
-  </span>
-  <span className="text-xs font-semibold text-muted-foreground whitespace-nowrap">Positive</span>
-  </div>
-  <p className="text-[11px] text-muted-foreground mt-2 font-medium">
-  Generative text tone score
-  </p>
-  </div>
-  </div>
+                    {/* Smooth Trend Line Chart SVG */}
+                    <div className="pt-2">
+                      <svg viewBox="0 0 200 60" className="w-full h-12 overflow-visible">
+                        <defs>
+                          <linearGradient id="volGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#FF5A1F" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="#FF5A1F" stopOpacity="0.0" />
+                          </linearGradient>
+                        </defs>
+                        <path d="M 0 45 Q 30 50, 50 35 T 100 40 T 140 15 T 180 20 T 200 5 L 200 60 L 0 60 Z" fill="url(#volGrad)" />
+                        <path d="M 0 45 Q 30 50, 50 35 T 100 40 T 140 15 T 180 20 T 200 5" fill="none" stroke="#FF5A1F" strokeWidth="2.5" strokeLinecap="round" />
+                      </svg>
+                      <div className="flex justify-between text-[9px] text-muted-foreground font-semibold pt-1">
+                        <span>Jan</span>
+                        <span>Mar</span>
+                        <span>Apr</span>
+                        <span>Jun</span>
+                        <span>Aug</span>
+                        <span>Set</span>
+                      </div>
+                    </div>
+                  </div>
 
- {/* ── Section 2: Charts Section (Trajectory, Competitor Comparison & Monthly Analytics) ── */}
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
- {/* Daily Trend Graph (8 Cols) */}
- <div className="lg:col-span-8 space-y-6">
- <TrajectoryChart
- totalKeywords={totalTracked}
- winningRate={Number(winPercent)}
- currentRate={Number(aiVisibilityScore)}
- />
+                  {/* Side Stats */}
+                  <div className="sm:col-span-1 space-y-3 flex flex-col justify-between">
+                    
+                    {/* SEO Difficulty */}
+                    <div className="bg-white dark:bg-card border border-border/80 rounded-2xl p-3.5 shadow-md space-y-1">
+                      <p className="text-[11px] font-bold text-muted-foreground">SEO Difficulty</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-extrabold text-foreground">88</span>
+                        <span className="bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                          📊 MEDIUM
+                        </span>
+                      </div>
+                    </div>
 
- {/* Mentions by AI Platform Grid */}
- <div className="bg-card rounded-[20px] p-6 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)]">
- <div className="flex items-center justify-between mb-4">
- <div>
- <h2 className="text-base font-bold text-foreground text-foreground tracking-tight">
- Mentions by AI Platform
- </h2>
- <p className="text-xs text-muted-foreground mt-0.5 font-medium">
- Direct citation frequency breakdown across top LLMs & Search engines
- </p>
- </div>
- <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full px-[14px] py-[6px] border border-[#FFD5C8] ">
- 5 Engines Active
- </span>
- </div>
+                    {/* Top Page Backlinks */}
+                    <div className="bg-white dark:bg-card border border-border/80 rounded-2xl p-3.5 shadow-md space-y-1">
+                      <p className="text-[11px] font-bold text-muted-foreground">Top Page Backlinks</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-extrabold text-foreground">50,5K</span>
+                        <span className="bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase flex items-center gap-1">
+                          🏷️ HIGH
+                        </span>
+                      </div>
+                    </div>
 
- <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
- {[
- { name: "Google AIO", count: Math.round(totalAIMentions * 0.38), share: "38%", color: "bg-primary" },
- { name: "ChatGPT 4o", count: Math.round(totalAIMentions * 0.28), share: "28%", color: "bg-[#22C55E]" },
- { name: "Gemini Pro", count: Math.round(totalAIMentions * 0.18), share: "18%", color: "bg-purple-500" },
- { name: "Perplexity", count: Math.round(totalAIMentions * 0.10), share: "10%", color: "bg-amber-500" },
- { name: "Claude 3.5", count: Math.round(totalAIMentions * 0.06), share: "6%", color: "bg-[#EF4444]" },
- ].map((engine) => (
- <div key={engine.name} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
- <div className="flex items-center justify-between mb-2">
- <span className={`w-2.5 h-2.5 rounded-full ${engine.color}`} />
- <span className="text-[10px] font-bold text-slate-500">{engine.share}</span>
- </div>
- <p className="text-xs font-bold text-slate-900 truncate">{engine.name}</p>
- <p className="text-base font-extrabold text-slate-900 mt-1">{engine.count}</p>
- </div>
- ))}
- </div>
- </div>
- </div>
+                  </div>
 
- {/* Competitor Comparison & Monthly Analytics (4 Cols) */}
- <div className="lg:col-span-4 space-y-6">
- {/* Competitor Share-of-Voice */}
- <div className="bg-card rounded-[20px] p-6 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)]">
- <div className="flex items-center justify-between mb-4">
- <h2 className="text-base font-bold text-foreground tracking-tight">
- Competitor Comparison
- </h2>
- <Link href="/dashboard/competitors" className="text-xs font-bold text-primary hover:underline">
- Details →
- </Link>
- </div>
+                </div>
+              </div>
+            </div>
 
- <div className="space-y-4">
- <div>
- <div className="flex justify-between text-xs font-medium mb-1.5">
- <span className="text-foreground font-bold">Your Brand Portfolio</span>
- <span className="text-primary font-bold">{aiVisibilityScore}%</span>
- </div>
- <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
- <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${aiVisibilityScore}%` }} />
- </div>
- </div>
+            {/* ── CARD 2: Research AI prompts and responses ── */}
+            <div className="bg-white border border-border rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs flex flex-col justify-between hover:border-border/80 transition-all">
+              <div className="space-y-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                  Research AI prompts and responses
+                </h2>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                  AI searches are growing fast. Stay relevant checking what users are asking.
+                </p>
+              </div>
 
- <div>
- <div className="flex justify-between text-xs font-medium mb-1.5">
- <span className="text-muted-foreground font-semibold">Industry Leader (Avg)</span>
- <span className="text-muted-foreground font-bold">62.1%</span>
- </div>
- <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
- <div className="bg-purple-500 h-full rounded-full transition-all duration-500" style={{ width: `62.1%` }} />
- </div>
- </div>
+              {/* Graphic Canvas Box */}
+              <div className="bg-[#F4EEFF] border border-purple-100 rounded-2xl p-5 relative overflow-hidden min-h-[300px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-tr from-purple-200/40 via-indigo-100/30 to-transparent rounded-2xl" />
 
- <div>
- <div className="flex justify-between text-xs font-medium mb-1.5">
- <span className="text-muted-foreground font-semibold">Top Competitor</span>
- <span className="text-muted-foreground font-bold">48.5%</span>
- </div>
- <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
- <div className="bg-slate-400 h-full rounded-full transition-all duration-500" style={{ width: `48.5%` }} />
- </div>
- </div>
+                <div className="relative z-10 w-full grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  
+                  {/* Brands & Sources Box */}
+                  <div className="bg-white border border-border/80 rounded-2xl p-4 shadow-md space-y-3">
+                    <div>
+                      <p className="text-[10px] font-extrabold text-muted-foreground uppercase">Brands Mentioned</p>
+                      <ol className="text-xs font-semibold text-foreground space-y-1 mt-1">
+                        <li className="flex items-center gap-1.5"><span className="text-muted-foreground text-[10px]">1.</span> Brand One</li>
+                        <li className="flex items-center gap-1.5"><span className="text-muted-foreground text-[10px]">2.</span> Second</li>
+                        <li className="flex items-center gap-1.5"><span className="text-muted-foreground text-[10px]">3.</span> Third Brand</li>
+                        <li className="flex items-center gap-1.5"><span className="text-muted-foreground text-[10px]">4.</span> Brand Four</li>
+                      </ol>
+                    </div>
 
- <div>
- <div className="flex justify-between text-xs font-medium mb-1.5">
- <span className="text-muted-foreground font-semibold">Secondary Challenger</span>
- <span className="text-muted-foreground font-bold">34.2%</span>
- </div>
- <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
- <div className="bg-slate-300 h-full rounded-full transition-all duration-500" style={{ width: `34.2%` }} />
- </div>
- </div>
- </div>
- </div>
+                    <div className="border-t border-border pt-2">
+                      <p className="text-[10px] font-extrabold text-muted-foreground uppercase mb-1.5">Top Sources</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {["🔴 YouTube", "🔵 Facebook", "📷 Instagram", "🎵 TikTok", "💼 LinkedIn", "🌐 Google", "🤖 ChatGPT"].map((src, idx) => (
+                          <span key={idx} className="text-[9px] font-bold bg-muted-bg px-2 py-0.5 rounded border border-border text-foreground">
+                            {src}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
- {/* Monthly Analytics & Traffic Overview */}
- <div className="bg-card rounded-[20px] p-6 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)]">
- <h2 className="text-base font-bold text-foreground tracking-tight mb-4">
- Traffic & Referral Analytics
- </h2>
+                  {/* Prompts Intent Radar Chart Box */}
+                  <div className="bg-white border border-border/80 rounded-2xl p-4 shadow-md space-y-2 flex flex-col justify-between">
+                    <p className="text-[10px] font-extrabold text-muted-foreground uppercase">Prompts Intent</p>
+                    
+                    {/* Concentric Radar Polygon SVG */}
+                    <div className="relative flex items-center justify-center my-1">
+                      <svg viewBox="0 0 140 140" className="w-28 h-28 bg-transparent">
+                        {/* Outer polygon grid */}
+                        <polygon points="70,10 130,70 70,130 10,70" fill="none" stroke="#E2E8F0" strokeWidth="1" />
+                        <polygon points="70,30 110,70 70,110 30,70" fill="none" stroke="#E2E8F0" strokeWidth="1" />
+                        <polygon points="70,50 90,70 70,90 50,70" fill="none" stroke="#E2E8F0" strokeWidth="1" />
+                        {/* Axis lines */}
+                        <line x1="70" y1="10" x2="70" y2="130" stroke="#E2E8F0" strokeWidth="1" />
+                        <line x1="10" y1="70" x2="130" y2="70" stroke="#E2E8F0" strokeWidth="1" />
+                        {/* Active Radar Shape */}
+                        <polygon points="70,22 118,70 70,105 28,70" fill="rgba(124, 58, 237, 0.25)" stroke="#7C3AED" strokeWidth="2" />
+                      </svg>
 
- <div className="grid grid-cols-2 gap-4">
- <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl">
- <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Est. AI Referrals</p>
- <p className="text-lg font-extrabold text-slate-900 mt-1">12,480</p>
- <span className="text-[10px] font-bold text-[#22C55E] flex items-center mt-1">
- +24.5% MoM <ArrowUpRight size={10} />
- </span>
- </div>
+                      {/* Intent Labels overlay */}
+                      <span className="absolute -top-1 text-[9px] font-bold text-foreground">Informational 38%</span>
+                      <span className="absolute -bottom-1 text-[9px] font-bold text-foreground">Transactional 33%</span>
+                      <span className="absolute -left-2 text-[9px] font-bold text-foreground">Navigational 21%</span>
+                      <span className="absolute -right-2 text-[9px] font-bold text-foreground">Commercial 8%</span>
+                    </div>
+                  </div>
 
- <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl">
- <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Organic Clicks</p>
- <p className="text-lg font-extrabold text-slate-900 mt-1">48,920</p>
- <span className="text-[10px] font-bold text-[#22C55E] flex items-center mt-1">
- +11.2% MoM <ArrowUpRight size={10} />
- </span>
- </div>
- </div>
- </div>
- </div>
- </div>
+                </div>
+              </div>
+            </div>
 
- {/* ── Section 3: Top Performing Keywords & Citation Classification ── */}
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
- {/* Top Performing Keywords (6 Cols) */}
- <div className="lg:col-span-6 bg-card rounded-[20px] p-6 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)]">
- <div className="flex items-center justify-between mb-4">
- <div>
- <h2 className="text-base font-bold text-foreground text-foreground tracking-tight">
- Top Performing Keywords
- </h2>
- <p className="text-xs text-muted-foreground mt-0.5 font-medium">
- Keywords with active AI citations and top organic SERP authority
- </p>
- </div>
- <span className="text-xs font-bold text-[#1B9E4B] bg-[#F0FDF4] border border-[#BBF7D0] px-3 py-1 rounded-full">
- Winning
- </span>
- </div>
+            {/* ── CARD 3: Optimize for search intent ── */}
+            <div className="bg-white border border-border rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs flex flex-col justify-between hover:border-border/80 transition-all">
+              <div className="space-y-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                  Optimize for search intent
+                </h2>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                  Focus on conversion-friendly keywords that align with user intent, not just high search volume.
+                </p>
+              </div>
 
- <div className="space-y-2.5 mt-4">
- {results.filter(r => r.client_cited || r.gap_label === "aligned" || r.gap_label === "geo_cited").slice(0, 5).map((item, idx) => {
- const client = clientMap.get(item.client_id);
- return (
- <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/80 bg-slate-50 hover:bg-slate-100 transition-colors">
- <div className="min-w-0 flex-1 pr-3">
- <p className="text-xs font-bold text-slate-900 truncate">{item.keyword}</p>
- <p className="text-[11px] text-slate-500 mt-0.5 truncate font-medium">{client?.name || "Client Domain"}</p>
- </div>
- <div className="flex items-center gap-3 shrink-0">
- {item.rank_position && (
- <span className="text-xs font-bold text-primary bg-primary/10 border border-[#FFD5C8] px-2.5 py-0.5 rounded-md">
- #{item.rank_position}
- </span>
- )}
- <span className="text-xs font-bold text-[#1B9E4B] bg-[#F0FDF4] border border-[#BBF7D0] px-2.5 py-0.5 rounded-md uppercase">
- Cited ★
- </span>
- </div>
- </div>
- );
- })}
- {results.filter(r => r.client_cited || r.gap_label === "aligned" || r.gap_label === "geo_cited").length === 0 && (
- <p className="text-xs text-muted-foreground italic py-6 text-center">No winning keyword citations captured yet.</p>
- )}
- </div>
- </div>
+              {/* Graphic Canvas Box */}
+              <div className="bg-[#EEF6FF] border border-blue-100 rounded-2xl p-5 relative overflow-hidden min-h-[300px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-200/40 via-cyan-100/30 to-transparent rounded-2xl" />
 
- {/* AI Platform Distribution & Breakdown (6 Cols) */}
- <div className="lg:col-span-6 bg-card rounded-[20px] p-6 border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)]">
- <div className="flex items-center justify-between mb-4">
- <div>
- <h2 className="text-base font-bold text-foreground tracking-tight">
- AI Citation Classification Breakdown
- </h2>
- <p className="text-xs text-muted-foreground mt-0.5 font-medium">
- Share of queries grouped by citation type and GEO gap status
- </p>
- </div>
- <span className="text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-3 py-1">
- {totalTracked} Evaluated
- </span>
- </div>
+                <div className="relative z-10 w-full space-y-3 max-w-sm mx-auto">
+                  
+                  {/* Floating Search Intent Tooltip Box */}
+                  <div className="bg-white border border-border rounded-2xl p-4 shadow-lg space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                      <span>SEARCH INTENT</span>
+                      <Info size={13} className="text-muted-foreground" />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      The main intent for this keyword is informational meaning users are in discovery stage seeking knowledge or details about the topic
+                    </p>
+                  </div>
 
- {/* Segmented Bar */}
- <div className="w-full h-3 rounded-full bg-slate-100 flex overflow-hidden gap-0.5 p-0.5 border border-slate-200 my-4">
- <div className="h-full bg-[#22C55E] rounded-l-full" style={{ width: `${Math.max(8, Number(winPercent))}%` }} />
- <div className="h-full bg-cyan-500" style={{ width: `${Math.max(8, Number(mentionPercent))}%` }} />
- <div className="h-full bg-amber-500" style={{ width: `${Math.max(8, Number(invisiblePercent))}%` }} />
- <div className="h-full bg-[#EF4444] rounded-r-full" style={{ width: `${Math.max(8, Number(losingPercent))}%` }} />
- </div>
+                  {/* Intent Funnel Pyramid with Beginner Explanations */}
+                  <div className="space-y-1.5 pt-1 text-center">
+                    {/* Informational */}
+                    <div className="w-full bg-[#FF5A1F] text-white py-2 px-3 rounded-xl text-xs font-bold shadow-sm flex items-center justify-between">
+                      <span className="font-extrabold">Informational</span>
+                      <span className="text-[10px] opacity-90 font-normal">People want to learn something</span>
+                    </div>
+                    {/* Commercial */}
+                    <div className="w-[92%] mx-auto bg-white border border-[#FF5A1F]/40 text-[#FF5A1F] py-1.5 px-2.5 rounded-lg text-[11px] font-bold shadow-2xs flex items-center justify-between">
+                      <span>Commercial</span>
+                      <span className="text-[9px] text-muted-foreground font-normal">Comparing options before buying</span>
+                    </div>
+                    {/* Transactional */}
+                    <div className="w-[82%] mx-auto bg-white/80 border border-border text-slate-700 py-1.5 px-2 rounded-lg text-[11px] font-medium flex items-center justify-between">
+                      <span>Transactional</span>
+                      <span className="text-[9px] text-muted-foreground font-normal">Ready to buy / take action</span>
+                    </div>
+                    {/* Navigational */}
+                    <div className="w-[70%] mx-auto bg-white/60 border border-border text-slate-600 py-1 px-2 rounded-md text-[10px] font-medium flex items-center justify-between">
+                      <span>Navigational</span>
+                      <span className="text-[9px] text-muted-foreground font-normal">Looking for a specific brand</span>
+                    </div>
+                  </div>
 
- <div className="grid grid-cols-2 gap-3 mt-4">
- <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
- <div className="flex items-center gap-2">
- <span className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />
- <span className="font-semibold text-slate-700">Winning Citations</span>
- </div>
- <span className="font-extrabold text-slate-900">{winning} ({winPercent}%)</span>
- </div>
+                </div>
+              </div>
+            </div>
 
- <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
- <div className="flex items-center gap-2">
- <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
- <span className="font-semibold text-slate-700">Text Mentioned</span>
- </div>
- <span className="font-extrabold text-slate-900">{mentioned} ({mentionPercent}%)</span>
- </div>
+            {/* ── CARD 4: Master local search ── */}
+            <div className="bg-white border border-border rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs flex flex-col justify-between hover:border-border/80 transition-all">
+              <div className="space-y-2">
+                <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                  Master local search
+                </h2>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                  Rank higher in location-based searches (e.g., &quot;best coffee shop in Jacksonville&quot;) to drive more traffic and customers.
+                </p>
+              </div>
 
- <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
- <div className="flex items-center gap-2">
- <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
- <span className="font-semibold text-slate-700">AI Invisible</span>
- </div>
- <span className="font-extrabold text-slate-900">{invisible} ({invisiblePercent}%)</span>
- </div>
+              {/* Graphic Canvas Box */}
+              <div className="bg-[#FFFBEB] border border-amber-100 rounded-2xl p-5 relative overflow-hidden min-h-[300px] flex items-center justify-center">
+                <div className="absolute inset-0 bg-gradient-to-tr from-amber-200/40 via-yellow-100/30 to-transparent rounded-2xl" />
 
- <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
- <div className="flex items-center gap-2">
- <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
- <span className="font-semibold text-slate-700">Double Loss</span>
- </div>
- <span className="font-extrabold text-slate-900">{losing} ({losingPercent}%)</span>
- </div>
- </div>
- </div>
- </div>
+                <div className="relative z-10 w-full max-w-sm mx-auto space-y-2">
+                  
+                  {/* Location Label */}
+                  <label className="block text-[11px] font-bold text-foreground">Location</label>
 
- {/* ── Section 4: Tracked Queries Table ── */}
- <div className="bg-card rounded-[20px] border border-border/80 shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] overflow-hidden">
- <div className="p-6 border-b border-border/80 flex items-center justify-between flex-wrap gap-4">
- <div>
- <h2 className="text-base font-bold text-foreground tracking-tight">
- Tracked Queries & AI Status Table
- </h2>
- <p className="text-xs text-muted-foreground mt-0.5 font-medium">
- Live audit results across all agency client domains
- </p>
- </div>
- <span className="text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
- Showing {Math.min(10, results.length)} of {results.length} snapshots
- </span>
- </div>
+                  {/* Active Highlighted Input Box */}
+                  <div className="bg-white border-2 border-[#FF5A1F] rounded-xl p-3 flex items-center justify-between shadow-md">
+                    <div className="flex items-center gap-2 text-xs font-bold text-foreground">
+                      <span>🇺🇸</span>
+                      <span>Jackson</span>
+                      <span className="w-0.5 h-4 bg-[#FF5A1F] animate-pulse inline-block" />
+                    </div>
+                    <ChevronDown size={16} className="text-muted-foreground bg-transparent" />
+                  </div>
 
- <div className="overflow-x-auto">
- <table className="w-full text-left text-xs">
- <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
- <tr>
- <th className="px-6 py-3.5">Keyword Query</th>
- <th className="px-6 py-3.5">Client Domain</th>
- <th className="px-6 py-3.5">Track Type</th>
- <th className="px-6 py-3.5">Google Rank</th>
- <th className="px-6 py-3.5">AI Mode</th>
- <th className="px-6 py-3.5">Classification</th>
- <th className="px-6 py-3.5 text-right">Action</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-200/80 font-medium">
- {results.slice(0, 10).map((row, idx) => {
- const client = clientMap.get(row.client_id);
- const isWin = row.client_cited || row.gap_label === "aligned" || row.gap_label === "geo_cited";
- const isMention = row.mentioned_in_text || row.gap_label.includes("mention");
- return (
- <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
- <td className="px-6 py-4 font-bold text-slate-900">{row.keyword}</td>
- <td className="px-6 py-4 text-slate-600 font-medium">{client?.name || "—"}</td>
- <td className="px-6 py-4">
- <span className="uppercase font-mono text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-2.5 py-0.5">
- {row.track_type}
- </span>
- </td>
- <td className="px-6 py-4">
- {row.rank_position ? (
- <span className="font-bold text-primary bg-primary/10 rounded-full px-2.5 py-0.5 border border-[#FFD5C8]">
- #{row.rank_position}
- </span>
- ) : (
- <span className="text-muted-foreground">—</span>
- )}
- </td>
- <td className="px-6 py-4">
- {row.aio_present ? (
- <span className="text-[#1B9E4B] bg-[#F0FDF4] rounded-full px-2.5 py-0.5 border border-[#BBF7D0] font-bold">
- Present
- </span>
- ) : (
- <span className="text-muted-foreground">Not Triggered</span>
- )}
- </td>
- <td className="px-6 py-4">
- <span className={`px-2.5 py-0.5 rounded-full font-bold ${
- isWin ? "text-[#1B9E4B] bg-[#F0FDF4] border border-[#BBF7D0]" :
- isMention ? "text-cyan-700 bg-cyan-50 border border-cyan-200" :
- "text-amber-700 bg-amber-50 border border-amber-200"
- }`}>
- {row.gap_label.replace(/_/g, " ")}
- </span>
- </td>
- <td className="px-6 py-4 text-right">
- {client && (
- <Link
- href={`/dashboard/clients/${client.id}`}
- className="text-primary font-bold hover:underline inline-flex items-center gap-1"
- >
- <span>View</span>
- <ChevronRight size={12} />
- </Link>
- )}
- </td>
- </tr>
- );
- })}
- {results.length === 0 && (
- <tr>
- <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground italic">
- No search results recorded yet. Add keywords and run audits to populate table.
- </td>
- </tr>
- )}
- </tbody>
- </table>
- </div>
- </div>
+                  {/* Dropdown Options List */}
+                  <div className="bg-white border border-border rounded-xl shadow-xl overflow-hidden text-xs divide-y divide-border">
+                    <div className="p-2.5 flex items-center gap-2 hover:bg-slate-50 text-foreground font-semibold cursor-pointer">
+                      <span>🇺🇸</span>
+                      <span>Jacksonville, Florida, United States</span>
+                    </div>
+                    <div className="p-2.5 flex items-center gap-2 hover:bg-slate-50 text-foreground font-medium cursor-pointer">
+                      <span>🇺🇸</span>
+                      <span>Jacksonville Beach, Florida, United States</span>
+                    </div>
+                    <div className="p-2.5 flex items-center gap-2 hover:bg-slate-50 text-foreground font-medium cursor-pointer">
+                      <span>🇺🇸</span>
+                      <span>Jacksonville, Alabama, United States</span>
+                    </div>
+                  </div>
 
- {/* ── Section 5: Client Portfolio Grid ── */}
- <div>
- <div className="flex items-center justify-between mb-5 flex-wrap gap-4">
- <div>
- <h2 className="text-lg font-bold text-foreground tracking-tight flex items-center gap-2">
- <span>Client Portfolio</span>
- <span className="text-xs text-muted-foreground font-normal">({clientList.length} domains tracked)</span>
- </h2>
- <p className="text-xs text-muted-foreground mt-0.5 font-medium">
- Individual brand authority cards tracking citation health and keyword gaps
- </p>
- </div>
+                </div>
+              </div>
+            </div>
 
- <div className="flex items-center gap-3">
- {!isSuperAdmin && typeof maxClients === "number" && (
- <span className="text-xs text-slate-600 bg-slate-100 border border-slate-200 rounded-full px-3 py-1 font-semibold">
- <strong className="text-slate-900">{clientList.length}</strong> of {maxClients} slots used
- </span>
- )}
+          </div>
+        </div>
+      </div>
 
- <Link
- href="/dashboard/clients/new"
- className="flex items-center gap-2 rounded-full px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
- >
- <Plus size={15} />
- <span>ADD CLIENT</span>
- </Link>
- </div>
- </div>
-
- {clientList.length === 0 ? (
- <div className="rounded-[20px] border border-dashed border-border bg-card p-12 text-center shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)]">
- <Sparkles size={36} className="text-primary mx-auto mb-3" />
- <p className="text-base font-bold text-foreground mb-1">Your Portfolio is Empty</p>
- <p className="text-xs text-muted-foreground max-w-md mx-auto mb-6">
- Add your first client domain to activate AI Mode monitoring and uncover whether ChatGPT and Gemini are citing your brand.
- </p>
- <Link
- href="/dashboard/clients/new"
- className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition-colors"
- >
- <Plus size={15} /> Add First Client Domain
- </Link>
- </div>
- ) : (
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
- {clientList.map((client) => {
- const svc = SERVICE_TYPE_LABELS[(client.service_type as ServiceType) || "seo_geo"];
- const clientResults = results.filter((r) => r.client_id === client.id);
-
- return (
- <Link
- key={client.id}
- href={`/dashboard/clients/${client.id}`}
- className="group rounded-[20px] border border-border/80 hover:border-primary bg-card p-6 transition-all duration-200 block shadow-sm hover:shadow-md hover:-translate-y-0.5"
- >
- <div className="flex items-center justify-between mb-4">
- <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-[20px] bg-primary/10 border border-[#FFD5C8] flex items-center justify-center text-primary font-extrabold text-xs shadow-xs">
- {client.name.slice(0, 2).toUpperCase()}
- </div>
- <div>
- <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate max-w-[160px]">
- {client.name}
- </p>
- <p className="text-[11px] text-muted-foreground truncate max-w-[160px] font-medium">
- {client.website}
- </p>
- </div>
- </div>
-
- <span className="rounded-md px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-slate-100 border border-slate-200 text-slate-700">
- {svc?.short || "SEO/GEO"}
- </span>
- </div>
-
- <div className="mt-5 pt-3.5 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground font-medium">
- <span>Tracked Queries: <strong className="text-foreground font-extrabold">{clientResults.length}</strong></span>
- <span className="text-primary font-bold group-hover:underline flex items-center gap-0.5">
- Dashboard →
- </span>
- </div>
- </Link>
- );
- })}
- </div>
- )}
- </div>
- </div>
- );
+    </div>
+  );
 }
-

@@ -14,43 +14,22 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
-
-  const applyTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("searchintel_theme", newTheme);
-      const root = document.documentElement;
-      if (newTheme === "dark") {
-        root.classList.add("dark");
-        root.style.colorScheme = "dark";
-      } else {
-        root.classList.remove("dark");
-        root.style.colorScheme = "light";
-      }
-    }
-  };
+  const [theme] = useState<Theme>("light");
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("searchintel_theme") as Theme | null;
-    if (savedTheme && ["light", "dark"].includes(savedTheme)) {
-      applyTheme(savedTheme);
-    } else {
-      applyTheme("dark");
+    if (typeof window !== "undefined") {
+      localStorage.setItem("searchintel_theme", "light");
+      const root = document.documentElement;
+      root.classList.remove("dark");
+      root.style.colorScheme = "light";
     }
   }, []);
 
-  const setTheme = (newTheme: Theme) => {
-    applyTheme(newTheme);
-  };
-
-  const toggleTheme = () => {
-    const nextTheme = theme === "dark" ? "light" : "dark";
-    applyTheme(nextTheme);
-  };
+  const setTheme = () => {};
+  const toggleTheme = () => {};
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme: theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme: "light", setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

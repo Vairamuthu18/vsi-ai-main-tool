@@ -199,18 +199,27 @@ export default function FeedbackPage() {
         throw new Error(`Profile fetch failed: ${profileError.message}`);
       }
 
-      // Insert feedback directly using Supabase client
+      const insertPayload = {
+        agency_id: profile?.agency_id ?? null,
+        user_id: currentUser.id,
+        category: apiCategory,
+        rating: null,
+        subject: subject.trim() || null,
+        message: message.trim(),
+        attachment_url: null,
+        page_url: "/dashboard/feedback",
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
+        context_data: {
+          subject: subject.trim(),
+          submitted_from: "dashboard_feedback_page",
+          timestamp: new Date().toISOString(),
+        },
+        status: "new",
+      };
+
       const { data: insertedData, error: insertError } = await supabase
         .from("feedback")
-        .insert({
-          agency_id: profile?.agency_id ?? null,
-          user_id: currentUser.id,
-          category: apiCategory,
-          message: message.trim(),
-          context_data: {
-            subject: subject.trim(),
-          }
-        })
+        .insert(insertPayload)
         .select("id")
         .single();
 

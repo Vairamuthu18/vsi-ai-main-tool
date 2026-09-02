@@ -55,6 +55,7 @@ export const COUNTRIES = [
   "United States",
   "United Kingdom",
   "India",
+  "Sri Lanka",
   "Other",
 ] as const;
 

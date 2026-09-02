@@ -59,7 +59,7 @@ export default function RootLayout({
  return (
  <html
  lang="en"
- className={`dark ${inter.variable} ${outfit.variable} ${geistMono.variable} ${plusJakarta.variable} ${instrumentSerif.variable} h-full antialiased`}
+ className={`${inter.variable} ${outfit.variable} ${geistMono.variable} ${plusJakarta.variable} ${instrumentSerif.variable} h-full antialiased`}
  suppressHydrationWarning
  >
  <body className="min-h-full flex flex-col font-sans bg-background text-foreground transition-colors duration-200" suppressHydrationWarning>

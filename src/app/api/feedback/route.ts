@@ -74,27 +74,35 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Comment too long (max 2000 characters)" }, { status: 400 });
 
       const ua = req.headers.get("user-agent")?.slice(0, 500) ?? null;
+      const contextDataObj = body.context_data ?? {
+        rating,
+        device:          body.device    ?? null,
+        os:              body.os         ?? null,
+        screen:          body.screen     ?? null,
+        viewport:        body.viewport   ?? null,
+        timezone:        body.timezone   ?? null,
+        theme:           body.theme      ?? null,
+        timestamp:       body.timestamp  ?? null,
+        attachment_name: body.attachment_name ?? null,
+      };
+
+      const insertPayload = {
+        agency_id:    session?.agencyId ?? null,
+        user_id:      session?.userId ?? null,
+        category:     ratingToCategory(rating),
+        rating:       String(rating),
+        subject:      comment.length > 80 ? comment.slice(0, 80) + "..." : comment,
+        message:      comment,
+        attachment_url: body.attachment_name ?? null,
+        page_url:     (body.page ?? body.page_url ?? "").slice(0, 500) || null,
+        user_agent:   body.browser?.slice(0, 500) ?? ua,
+        context_data: contextDataObj,
+        status:       "new",
+      };
+
       const { data, error } = await supabase
         .from("feedback")
-        .insert({
-          agency_id:    session?.agencyId ?? null,
-          user_id:      session?.userId ?? null,
-          category:     ratingToCategory(rating),
-          message:      comment,
-          page_url:     (body.page ?? body.page_url ?? "").slice(0, 500) || null,
-          user_agent:   body.browser?.slice(0, 500) ?? ua,
-          context_data: {
-            rating,
-            device:          body.device    ?? null,
-            os:              body.os         ?? null,
-            screen:          body.screen     ?? null,
-            viewport:        body.viewport   ?? null,
-            timezone:        body.timezone   ?? null,
-            theme:           body.theme      ?? null,
-            timestamp:       body.timestamp  ?? null,
-            attachment_name: body.attachment_name ?? null,
-          },
-        })
+        .insert(insertPayload)
         .select("id")
         .single();
 
@@ -127,17 +135,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Message is too long (5000 char max)" }, { status: 400 });
 
     const ua = req.headers.get("user-agent")?.slice(0, 500) ?? null;
+    const legacyPayload = {
+      agency_id:    session?.agencyId ?? null,
+      user_id:      session?.userId ?? null,
+      category,
+      rating:       null,
+      subject:      null,
+      message,
+      attachment_url: null,
+      page_url:     body.page_url?.slice(0, 500) ?? null,
+      user_agent:   ua,
+      context_data: body.context_data ?? null,
+      status:       "new",
+    };
+
     const { data, error } = await supabase
       .from("feedback")
-      .insert({
-        agency_id:    session?.agencyId ?? null,
-        user_id:      session?.userId ?? null,
-        category,
-        message,
-        page_url:     body.page_url?.slice(0, 500) ?? null,
-        user_agent:   ua,
-        context_data: body.context_data ?? null,
-      })
+      .insert(legacyPayload)
       .select("id")
       .single();
 

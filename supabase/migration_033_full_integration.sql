@@ -32,10 +32,13 @@ CREATE TABLE IF NOT EXISTS public.feedback (
   updated_at    timestamptz NOT NULL DEFAULT now()
 );
 
--- Ensure rating column exists if feedback was created earlier
+-- Ensure rating and other extended columns exist if feedback was created earlier
 ALTER TABLE public.feedback ADD COLUMN IF NOT EXISTS rating text;
 ALTER TABLE public.feedback ADD COLUMN IF NOT EXISTS subject text;
 ALTER TABLE public.feedback ADD COLUMN IF NOT EXISTS attachment_url text;
+ALTER TABLE public.feedback ADD COLUMN IF NOT EXISTS page_url text;
+ALTER TABLE public.feedback ADD COLUMN IF NOT EXISTS user_agent text;
+ALTER TABLE public.feedback ADD COLUMN IF NOT EXISTS context_data jsonb;
 
 CREATE INDEX IF NOT EXISTS idx_feedback_agency_id  ON public.feedback(agency_id);
 CREATE INDEX IF NOT EXISTS idx_feedback_user_id    ON public.feedback(user_id);

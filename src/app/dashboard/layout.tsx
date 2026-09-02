@@ -78,7 +78,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <MessagesProvider>
         <FeedbackProvider>
           <ScrollToTop />
-          <div className="md:flex min-h-screen md:h-screen bg-background text-foreground selection:bg-blue-500/20 relative overflow-x-hidden font-sans" suppressHydrationWarning>
+          <div className="md:flex min-h-screen md:h-screen bg-[#F8FAFC] text-foreground selection:bg-blue-500/20 relative overflow-x-hidden font-sans" suppressHydrationWarning>
             <Sidebar
               agencyName={session.branding.displayName || session.agencyName}
               agencyLogoUrl={session.branding.logoUrl}

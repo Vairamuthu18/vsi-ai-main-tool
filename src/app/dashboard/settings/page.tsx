@@ -2,10 +2,9 @@
 
 import React, { useState, useRef, useEffect, useTransition } from "react";
 import {
-  Settings, Moon, Sun, Save, CheckCircle2, Building2,
+  Settings, Save, CheckCircle2, Building2,
   Upload, X, ImageIcon, AlertCircle, Loader2
 } from "lucide-react";
-import { useTheme } from "@/components/ThemeProvider";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -59,7 +58,6 @@ function compressImage(dataUrl: string, maxDim = 400, quality = 0.75): Promise<s
 /* ─── Component ─────────────────────────────────────────────────────── */
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -244,80 +242,6 @@ export default function SettingsPage() {
       )}
 
       <form onSubmit={handleSaveSettings} className="space-y-8">
-
-        {/* ── Interface Theme Section ────────────────────────────────── */}
-        <div className="bg-card rounded-[24px] border border-border p-6 sm:p-7 shadow-xs space-y-5">
-          <div className="flex items-center justify-between border-b border-border pb-4 flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
-                <Sun size={20} />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-foreground leading-tight">Interface Theme</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Select your visual appearance preference across SearchIntel
-                </p>
-              </div>
-            </div>
-            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-muted-bg border border-border text-muted-foreground uppercase tracking-wider">
-              {theme.toUpperCase()} MODE
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
-            {/* Light */}
-            <button
-              type="button"
-              onClick={() => setTheme("light")}
-              className={`group relative p-5 rounded-[20px] border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
-                theme === "light"
-                  ? "bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/20 ring-2 ring-amber-500/30 scale-[1.01]"
-                  : "bg-muted-bg/50 border-border text-foreground hover:border-amber-500/40 hover:bg-muted-bg"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-2.5 rounded-xl ${theme === "light" ? "bg-white/20 text-white" : "bg-card border border-border text-amber-500"}`}>
-                  <Sun size={22} />
-                </div>
-                {theme === "light" && (
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-white/20 text-white tracking-wider">Active</span>
-                )}
-              </div>
-              <div>
-                <h3 className="text-sm font-bold tracking-tight">Light Mode</h3>
-                <p className={`text-xs mt-0.5 font-medium ${theme === "light" ? "text-white/80" : "text-muted-foreground"}`}>
-                  Clean light background interface
-                </p>
-              </div>
-            </button>
-
-            {/* Dark */}
-            <button
-              type="button"
-              onClick={() => setTheme("dark")}
-              className={`group relative p-5 rounded-[20px] border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
-                theme === "dark"
-                  ? "bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/20 ring-2 ring-amber-500/30 scale-[1.01]"
-                  : "bg-muted-bg/50 border-border text-foreground hover:border-amber-500/40 hover:bg-muted-bg"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`p-2.5 rounded-xl ${theme === "dark" ? "bg-white/20 text-white" : "bg-card border border-border text-amber-500"}`}>
-                  <Moon size={22} />
-                </div>
-                {theme === "dark" && (
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-white/20 text-white tracking-wider">Active</span>
-                )}
-              </div>
-              <div>
-                <h3 className="text-sm font-bold tracking-tight">Dark Mode</h3>
-                <p className={`text-xs mt-0.5 font-medium ${theme === "dark" ? "text-white/80" : "text-muted-foreground"}`}>
-                  Sleek dark background interface
-                </p>
-              </div>
-            </button>
-          </div>
-        </div>
 
         {/* ── Agency Profile Section ─────────────────────────────────── */}
         <div className="bg-card rounded-[20px] border border-border p-6 shadow-xs space-y-5">

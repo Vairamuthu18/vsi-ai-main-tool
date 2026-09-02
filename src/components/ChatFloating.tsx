@@ -370,8 +370,8 @@ export default function ChatFloating() {
           <button
             onClick={handleOpen}
             aria-label="AI Assistant"
-            className="relative flex items-center justify-center w-[56px] h-[56px] rounded-full text-white shadow-[0_12px_32px_rgba(255,107,0,0.35)] hover:shadow-[0_16px_40px_rgba(255,107,0,0.5)] hover:scale-[1.08] transition-all duration-200 cursor-pointer border border-black/10 focus:outline-none focus:ring-4 focus:ring-[#FF6B00]/30"
-            style={{ backgroundColor: "#FF6B00" }}
+            className="relative flex items-center justify-center w-[56px] h-[56px] rounded-full text-white shadow-[0_12px_32px_rgba(255,90,31,0.35)] hover:shadow-[0_16px_40px_rgba(255,90,31,0.5)] hover:scale-[1.08] transition-all duration-200 cursor-pointer border border-black/10 focus:outline-none focus:ring-4 focus:ring-[#FF5A1F]/30"
+            style={{ backgroundColor: "#FF5A1F" }}
           >
             <svg
               width="26"
@@ -410,7 +410,7 @@ export default function ChatFloating() {
           } flex flex-col rounded-[20px] shadow-2xl overflow-hidden border border-border bg-card animate-in fade-in slide-in-from-bottom-5`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 text-white bg-[#FF6B00] shadow-sm select-none">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 text-white bg-[#FF5A1F] shadow-sm select-none">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-white shrink-0 shadow-inner">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

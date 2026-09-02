@@ -120,7 +120,7 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border text-foreground hover:bg-muted text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
             >
               <Check size={14} />
               Mark All as Read

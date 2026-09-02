@@ -246,16 +246,8 @@ export default function Topbar({ userEmail, userRole, agencyName }: TopbarProps)
           <span>AI Engine Active</span>
         </div>
 
-        {/* Action icons & Theme toggle */}
+        {/* Action icons */}
         <div className="flex items-center gap-1">
-          <button
-            onClick={toggleTheme}
-            className="p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted-bg transition-colors cursor-pointer"
-            aria-label="Toggle theme"
-          >
-            {resolvedTheme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
-          </button>
-
           <NotificationDropdown />
 
           <Link
