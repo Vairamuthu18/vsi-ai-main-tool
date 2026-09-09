@@ -87,7 +87,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               userEmail={session.email}
               atClientCap={atClientCap}
             />
-            <main className="flex-1 flex flex-col md:overflow-y-auto relative z-10 min-w-0" data-scroll-container>
+            <main className="flex-1 flex flex-col md:overflow-y-auto min-w-0" data-scroll-container>
               <Topbar
                 userEmail={session.email}
                 userRole={session.role}

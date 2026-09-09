@@ -7,11 +7,16 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    // Default ignores of eslint-config-next & nested sub-projects:
     ".next/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "valgrow-ai-suite/**",
+    "VSI-login-page/**",
+    "VSI-ai-tool-main/**",
+    "Example/**",
+    "docs/**",
   ]),
 ]);
 

@@ -24,8 +24,13 @@ export default function ScrollToTop() {
       });
     });
 
-    // 3. Reset any inner page scrollable elements
-    const overflowContainers = document.querySelectorAll(".overflow-y-auto, .overflow-auto, .overflow-y-scroll");
+    // 3. Reset any inner page scrollable elements (excluding sidebar & nav containers)
+    const getPageContainers = () =>
+      Array.from(
+        document.querySelectorAll(".overflow-y-auto, .overflow-auto, .overflow-y-scroll")
+      ).filter((container) => !container.closest("aside, nav, [data-sidebar]"));
+
+    const overflowContainers = getPageContainers();
     overflowContainers.forEach((container) => {
       container.scrollTo({
         top: 0,
@@ -40,7 +45,7 @@ export default function ScrollToTop() {
       mainContainers.forEach((container) => {
         container.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       });
-      overflowContainers.forEach((container) => {
+      getPageContainers().forEach((container) => {
         container.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       });
     });

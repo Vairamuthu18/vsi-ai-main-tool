@@ -120,7 +120,7 @@ export default function Topbar({ userEmail, userRole, agencyName }: TopbarProps)
     { title: "Acme Corp — Overview", category: "Client", href: "/dashboard/clients/mock-client-1" },
     { title: "VG Digital — Keywords", category: "Client", href: "/dashboard/clients/1" },
     { title: "Athariw — Tasks", category: "Client", href: "/dashboard/clients/2" },
-    { title: "Quick Diagnostics Engine", category: "Tool", href: "/dashboard/check" },
+    { title: "AI Visibility Intelligence", category: "Tool", href: "/dashboard/check?tab=aivisibility" },
     { title: "Competitor Benchmark", category: "Intelligence", href: "/dashboard/competitors" },
     { title: "Tasks & Execution Audits", category: "Tasks", href: "/dashboard/tasks" },
     { title: "AI Prompt Manager", category: "Prompts", href: "/dashboard/prompts" },

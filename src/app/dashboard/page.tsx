@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAgency, isDummySupabase } from "@/lib/auth";
 import DashboardClientView from "@/components/DashboardClientView";
 
+import { Suspense } from "react";
+
 export default async function DashboardPage() {
   const session = await requireAgency();
   const isSuperAdmin = session.role === "super_admin";
@@ -90,12 +92,18 @@ export default async function DashboardPage() {
   const rawResults = recentResults ?? [];
 
   return (
-    <DashboardClientView
-      isSuperAdmin={isSuperAdmin}
-      clientList={clientList}
-      keywordCount={keywordCount || 0}
-      rawResults={rawResults}
-      maxClients={maxClients}
-    />
+    <Suspense fallback={
+      <div className="p-8 text-center text-sm font-semibold text-muted-foreground flex items-center justify-center min-h-[400px]">
+        Loading Overview...
+      </div>
+    }>
+      <DashboardClientView
+        isSuperAdmin={isSuperAdmin}
+        clientList={clientList}
+        keywordCount={keywordCount || 0}
+        rawResults={rawResults}
+        maxClients={maxClients}
+      />
+    </Suspense>
   );
 }

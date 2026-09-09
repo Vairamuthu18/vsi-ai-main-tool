@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { 
@@ -37,9 +37,7 @@ const navGroups = [
   {
     title: "MAIN",
     items: [
-      { href: "/dashboard", label: "Overview", tooltip: "Dashboard command center", Icon: LayoutDashboard },
-      { href: "/dashboard/research", label: "Find Keywords", tooltip: "Discover keywords people search for", Icon: Search },
-      { href: "/dashboard/check?tab=diagnostics", label: "SEO Checkup", tooltip: "Find SEO problems on your website", Icon: ShieldCheck },
+      { href: "/dashboard", label: "Overview", tooltip: "Dashboard command center & keyword research", Icon: LayoutDashboard },
       { href: "/dashboard/competitors", label: "Competitors", tooltip: "Compare your website with competitors", Icon: Users },
       { href: "/dashboard/tasks", label: "Rank Tracking", tooltip: "Track your Google rankings", Icon: CheckSquare },
     ],
@@ -49,15 +47,6 @@ const navGroups = [
     items: [
       { href: "/dashboard/check?tab=aivisibility", label: "AI Visibility", tooltip: "See how often AI mentions your brand", Icon: Sparkles },
       { href: "/dashboard/prompts", label: "AI Prompts", tooltip: "Explore questions people ask AI", Icon: Terminal },
-      { href: "/dashboard/prompts?tab=mentions", label: "Brand Mentions", tooltip: "Track AI mentions of your brand", Icon: Layers },
-      { href: "/dashboard/check?tab=citations", label: "Citation Analysis", tooltip: "See sources AI relies on", Icon: FileText },
-    ],
-  },
-  {
-    title: "REPORTS",
-    items: [
-      { href: "/dashboard/clients", label: "Reports", tooltip: "View client & project SEO reports", Icon: PieChart },
-      { href: "/dashboard/tasks", label: "Tasks & Audits", tooltip: "SEO to-do list & site audits", Icon: CheckSquare },
     ],
   },
   {
@@ -87,6 +76,7 @@ export default function Sidebar({
   showSidebarProfile = false,
 }: Props) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -121,7 +111,7 @@ export default function Sidebar({
     };
   }, [clients]);
 
-  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => { setOpen(false); }, [pathname, searchParams]);
 
   useEffect(() => {
     const clientUser = getClientUser();
@@ -164,7 +154,28 @@ export default function Sidebar({
     logoutAndRedirect();
   }
 
-  const isActive = (href: string) => pathname === href;
+  const currentTab = searchParams.get("tab");
+
+  const isActive = (href: string) => {
+    const [targetPath, targetQuery] = href.split("?");
+    
+    if (targetQuery) {
+      const targetParams = new URLSearchParams(targetQuery);
+      const targetTab = targetParams.get("tab");
+      
+      if (targetTab) {
+        return pathname === targetPath && currentTab === targetTab;
+      }
+      return pathname === targetPath && searchParams.toString() === targetQuery;
+    }
+    
+    if (pathname === targetPath) {
+      if (currentTab === "aivisibility" && href === "/dashboard/check") return false;
+      return true;
+    }
+    
+    return false;
+  };
   const isClientOn = (id: string) => pathname.startsWith(`/dashboard/clients/${id}`);
   const onAdmin = pathname.startsWith("/admin");
 
@@ -251,17 +262,17 @@ export default function Sidebar({
             <Link
               href="/admin"
               title={isCollapsed ? "Super Admin Console" : undefined}
-              className={`flex items-center ${isCollapsed ? "justify-center p-2.5" : "justify-between gap-2.5 px-4 py-2.5"} rounded-[14px] text-xs transition-all ${
+              className={`flex items-center ${isCollapsed ? "justify-center p-2.5" : "justify-between gap-2.5 px-4 py-2.5"} rounded-2xl text-xs transition-all ${
                 onAdmin
-                  ? "bg-amber-500 text-white font-bold shadow-sm"
-                  : "text-muted-foreground hover:bg-muted-bg hover:text-foreground font-medium"
+                  ? "bg-[#FF5A1F] text-white font-bold shadow-md shadow-[#FF5A1F]/20"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-foreground font-medium"
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <ShieldCheck size={18} className={onAdmin ? "text-white" : "text-muted-foreground"} />
+                <ShieldCheck size={18} className={onAdmin ? "text-white" : "text-slate-500"} />
                 {!isCollapsed && <span>Super Admin Console</span>}
               </div>
-              {!isCollapsed && <ChevronRight size={14} className={onAdmin ? "text-white" : "text-muted-foreground"} />}
+              {!isCollapsed && <ChevronRight size={14} className={onAdmin ? "text-white" : "text-slate-500"} />}
             </Link>
           </div>
         )}
@@ -279,14 +290,14 @@ export default function Sidebar({
                     key={href}
                     href={href}
                     title={tooltip || label}
-                    className={`flex items-center ${isCollapsed ? "justify-center p-2.5" : "justify-between gap-2.5 px-4 py-2.5"} rounded-[14px] text-xs transition-all ${
+                    className={`flex items-center ${isCollapsed ? "justify-center p-2.5" : "justify-between gap-2.5 px-4 py-2.5"} rounded-2xl text-xs transition-all ${
                       active
-                        ? "bg-amber-500 text-white font-bold shadow-sm"
-                        : "text-muted-foreground hover:bg-muted-bg hover:text-foreground font-medium"
+                        ? "bg-[#FF5A1F] text-white font-bold shadow-md shadow-[#FF5A1F]/20"
+                        : "text-slate-600 hover:bg-slate-100 hover:text-foreground font-medium"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon size={18} className={active ? "text-white" : "text-muted-foreground group-hover:text-foreground"} />
+                      <Icon size={18} className={active ? "text-white" : "text-slate-500 group-hover:text-foreground"} />
                       {!isCollapsed && <span>{label}</span>}
                     </div>
                   </Link>
@@ -414,7 +425,7 @@ export default function Sidebar({
       <aside
         className={`
           flex flex-col bg-card border-r border-border/80 
-          fixed md:sticky top-0 inset-y-0 left-0 z-50
+          fixed md:sticky top-0 inset-y-0 left-0 z-30
           ${isCollapsed ? "md:w-16 w-64" : "w-64"} h-screen max-h-screen shrink-0 overflow-hidden
           transition-all duration-200 ease-out shadow-xl md:shadow-none
           ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0
@@ -497,10 +508,10 @@ function ClientList({
               <Link
                 key={client.id}
                 href={`/dashboard/clients/${client.id}`}
-                className={`flex items-center justify-between gap-2 rounded-[14px] px-3 py-2.5 text-xs transition-all group ${
+                className={`flex items-center justify-between gap-2 rounded-2xl px-3.5 py-2.5 text-xs transition-all group ${
                   active
-                    ? "bg-amber-500 text-white font-bold rounded-[14px] shadow-sm"
-                    : "text-muted-foreground hover:bg-muted-bg hover:text-foreground rounded-[14px]"
+                    ? "bg-[#FF5A1F] text-white font-bold shadow-md shadow-[#FF5A1F]/20"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-foreground font-medium"
                 }`}
               >
                 <div className="min-w-0 flex-1">
