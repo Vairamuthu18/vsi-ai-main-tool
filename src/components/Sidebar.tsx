@@ -416,7 +416,7 @@ export default function Sidebar({
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity"
+          className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity"
           aria-hidden
         />
       )}
@@ -425,9 +425,9 @@ export default function Sidebar({
       <aside
         className={`
           flex flex-col bg-card border-r border-border/80 
-          fixed md:sticky top-0 inset-y-0 left-0 z-30
+          fixed md:sticky top-0 inset-y-0 left-0 z-50 md:z-30
           ${isCollapsed ? "md:w-16 w-64" : "w-64"} h-screen max-h-screen shrink-0 overflow-hidden
-          transition-all duration-200 ease-out shadow-xl md:shadow-none
+          transition-all duration-200 ease-out shadow-2xl md:shadow-none
           ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0
         `}
         suppressHydrationWarning
