@@ -214,18 +214,26 @@ export interface AIOResult {
 }
 
 export type GapLabel =
-  | "aligned"               // rank ≤ 10 AND cited AND brand named in AIO text (true winning)
-  | "aligned_no_mention"    // rank ≤ 10 AND cited but brand NOT named in AIO text
-  | "ai_mentioned"          // rank ≤ 10 AND brand in AIO text (not a source)
-  | "search_strong_ai_invisible" // rank ≤ 10 AND zero AIO presence
-  | "geo_cited"             // unranked AND cited AND brand named in AIO text
-  | "geo_cited_no_mention"  // unranked AND cited but brand NOT named in AIO text
-  | "geo_mentioned"         // unranked AND brand in AIO text (not a source)
-  | "geo_invisible"         // unranked AND AIO present but no cite / mention
-  | "seo_ranked"            // ranked, no AIO tracking
-  | "seo_ranked_no_aio"     // ranked, AIO not triggered
-  | "seo_not_ranked"        // not ranked, no AIO tracking
-  | "weak_double_loss";     // not ranking AND not in AIO
+  | "weak_double_loss"     // Google NO + AI mention NO + citation NO
+  | "seo_only"             // Google YES + AI mention NO + citation NO
+  | "ai_mention_only"      // Google NO + AI mention YES + citation NO
+  | "ai_visible"           // Google NO + AI mention YES + citation YES
+  | "partial_visibility"   // Google YES + AI mention YES + citation NO
+  | "strong_visibility"    // Google YES + AI mention YES + citation YES
+  | "citation_only"        // Google NO + AI mention NO + citation YES
+  | "seo_plus_citation"    // Google YES + AI mention NO + citation YES
+  // Backward compatibility aliases
+  | "aligned"
+  | "aligned_no_mention"
+  | "ai_mentioned"
+  | "search_strong_ai_invisible"
+  | "geo_cited"
+  | "geo_cited_no_mention"
+  | "geo_mentioned"
+  | "geo_invisible"
+  | "seo_ranked"
+  | "seo_ranked_no_aio"
+  | "seo_not_ranked";
 
 export type StatusColor = "green" | "yellow" | "red" | "blue" | "gray" | "amber" | "orange";
 
@@ -237,90 +245,186 @@ export interface GapClassification {
 }
 
 export const GAP_CLASSIFICATIONS: Record<GapLabel, GapClassification> = {
-  aligned: {
-    label: "aligned",
-    dot: "green",
-    title: "Aligned",
-    description: "Ranking, cited as a source, AND named in the AI Mode answer — winning on both channels",
-  },
-  aligned_no_mention: {
-    label: "aligned_no_mention",
-    dot: "blue",
-    title: "Ranking & Cited — Brand Unnamed",
-    description: "Ranking and cited as a source, but the brand isn't named in the AI Mode answer text",
-  },
-  ai_mentioned: {
-    label: "ai_mentioned",
-    dot: "blue",
-    title: "AI-Mentioned / Not Sourced",
-    description: "Ranking AND brand mentioned in AI Mode text — visible but not getting the source citation",
-  },
-  search_strong_ai_invisible: {
-    label: "search_strong_ai_invisible",
-    dot: "yellow",
-    title: "Search-Strong / AI-Invisible",
-    description: "Ranking top 10 but completely absent from AI Mode — at risk of silent click loss",
-  },
-  geo_cited: {
-    label: "geo_cited",
-    dot: "green",
-    title: "GEO Cited",
-    description: "Cited as a source AND named in the AI Mode answer — strong AI authority for this query",
-  },
-  geo_cited_no_mention: {
-    label: "geo_cited_no_mention",
-    dot: "blue",
-    title: "GEO Cited — Brand Unnamed",
-    description: "Page is linked as a source but the brand isn't named in the answer text — partial AI visibility",
-  },
-  geo_mentioned: {
-    label: "geo_mentioned",
-    dot: "blue",
-    title: "GEO Mentioned",
-    description: "Brand named in the AI Mode answer but no source citation — recognition without traffic",
-  },
-  geo_invisible: {
-    label: "geo_invisible",
-    dot: "yellow",
-    title: "GEO Invisible",
-    description: "AI Mode is present for this query but the brand is neither cited nor named",
-  },
-  seo_ranked: {
-    label: "seo_ranked",
-    dot: "green",
-    title: "Ranking",
-    description: "Solid Google ranking. No AI tracking enabled — consider GEO to check AI visibility",
-  },
-  seo_ranked_no_aio: {
-    label: "seo_ranked_no_aio",
-    dot: "green",
-    title: "Ranking — No AI Mode",
-    description: "Ranking in top 10 and Google isn't serving an AI answer for this query",
-  },
-  seo_not_ranked: {
-    label: "seo_not_ranked",
-    dot: "red",
-    title: "Not Ranking",
-    description: "Outside the top 10 in Google. No AI Mode signal captured for this run",
-  },
   weak_double_loss: {
     label: "weak_double_loss",
     dot: "red",
     title: "Weak / Double Loss",
-    description: "Not ranking AND not in AI Mode — invisible on both channels",
+    description: "Not ranking in Google organic AND not cited or mentioned in AI Mode — invisible on both channels",
+  },
+  seo_only: {
+    label: "seo_only",
+    dot: "yellow",
+    title: "SEO Only",
+    description: "Ranking in Google organic, but completely absent from AI Mode answers and citations",
+  },
+  ai_mention_only: {
+    label: "ai_mention_only",
+    dot: "blue",
+    title: "AI Mention Only",
+    description: "Brand name is mentioned in AI Mode answer text, but website is not ranking in Google organic or cited as a source link",
+  },
+  ai_visible: {
+    label: "ai_visible",
+    dot: "green",
+    title: "AI Visible",
+    description: "Cited as a source link AND mentioned in AI Mode answer text, despite not ranking in Google organic search",
+  },
+  partial_visibility: {
+    label: "partial_visibility",
+    dot: "blue",
+    title: "Partial Visibility",
+    description: "Ranking in Google organic and mentioned in AI text, but website is not linked as a cited source",
+  },
+  strong_visibility: {
+    label: "strong_visibility",
+    dot: "green",
+    title: "Strong Visibility",
+    description: "Ranking in Google organic, cited as a source link, AND mentioned in AI Mode text — winning on all channels",
+  },
+  citation_only: {
+    label: "citation_only",
+    dot: "blue",
+    title: "Citation Only",
+    description: "Website is cited as a source link in AI Mode, but brand name is not mentioned in text and not ranking in Google organic",
+  },
+  seo_plus_citation: {
+    label: "seo_plus_citation",
+    dot: "green",
+    title: "SEO + Citation",
+    description: "Ranking in Google organic AND cited as a source link in AI Mode, but brand name is unmentioned in text",
+  },
+  // Backward compatibility mappings
+  aligned: {
+    label: "strong_visibility",
+    dot: "green",
+    title: "Strong Visibility",
+    description: "Ranking in Google organic, cited as a source link, AND mentioned in AI Mode text",
+  },
+  aligned_no_mention: {
+    label: "seo_plus_citation",
+    dot: "green",
+    title: "SEO + Citation",
+    description: "Ranking in Google organic AND cited as a source link in AI Mode, but brand name is unmentioned in text",
+  },
+  ai_mentioned: {
+    label: "partial_visibility",
+    dot: "blue",
+    title: "Partial Visibility",
+    description: "Ranking in Google organic and mentioned in AI text, but website is not linked as a cited source",
+  },
+  search_strong_ai_invisible: {
+    label: "seo_only",
+    dot: "yellow",
+    title: "SEO Only",
+    description: "Ranking in Google organic, but completely absent from AI Mode answers and citations",
+  },
+  geo_cited: {
+    label: "ai_visible",
+    dot: "green",
+    title: "AI Visible",
+    description: "Cited as a source link AND mentioned in AI Mode answer text, despite not ranking in Google organic search",
+  },
+  geo_cited_no_mention: {
+    label: "citation_only",
+    dot: "blue",
+    title: "Citation Only",
+    description: "Website is cited as a source link in AI Mode, but brand name is not mentioned in text and not ranking in Google organic",
+  },
+  geo_mentioned: {
+    label: "ai_mention_only",
+    dot: "blue",
+    title: "AI Mention Only",
+    description: "Brand name is mentioned in AI Mode answer text, but website is not ranking in Google organic or cited as a source link",
+  },
+  geo_invisible: {
+    label: "weak_double_loss",
+    dot: "red",
+    title: "Weak / Double Loss",
+    description: "Not ranking in Google organic AND not cited or mentioned in AI Mode — invisible on both channels",
+  },
+  seo_ranked: {
+    label: "seo_only",
+    dot: "yellow",
+    title: "SEO Only",
+    description: "Ranking in Google organic, but completely absent from AI Mode answers and citations",
+  },
+  seo_ranked_no_aio: {
+    label: "seo_only",
+    dot: "yellow",
+    title: "SEO Only",
+    description: "Ranking in Google organic, but completely absent from AI Mode answers and citations",
+  },
+  seo_not_ranked: {
+    label: "weak_double_loss",
+    dot: "red",
+    title: "Weak / Double Loss",
+    description: "Not ranking in Google organic AND not cited or mentioned in AI Mode — invisible on both channels",
   },
 };
 
-export function classifyGap(serp: SerpResult, aio: AIOResult): GapClassification {
-  const ranked = serp.position !== null && serp.position <= 10;
-  const cited = !!aio.clientCited;
-  const mentioned = !!aio.mentionedInText;
+/**
+ * Requirement 5: Deterministic single function for final visibility status
+ */
+export function calculateVisibilityStatus(
+  googleRank: number | null,
+  brandMentioned: boolean,
+  brandCited: boolean
+): GapClassification {
+  const ranked = googleRank !== null;
+  const mentioned = !!brandMentioned;
+  const cited = !!brandCited;
 
-  if (ranked && cited && mentioned) return GAP_CLASSIFICATIONS.aligned;
-  if (ranked && cited)              return GAP_CLASSIFICATIONS.aligned_no_mention;
-  if (ranked && mentioned)          return GAP_CLASSIFICATIONS.ai_mentioned;
-  if (ranked)                       return GAP_CLASSIFICATIONS.search_strong_ai_invisible;
+  if (!ranked && !mentioned && !cited) return GAP_CLASSIFICATIONS.weak_double_loss;
+  if (ranked && !mentioned && !cited)  return GAP_CLASSIFICATIONS.seo_only;
+  if (!ranked && mentioned && !cited)  return GAP_CLASSIFICATIONS.ai_mention_only;
+  if (!ranked && mentioned && cited)   return GAP_CLASSIFICATIONS.ai_visible;
+  if (ranked && mentioned && !cited)   return GAP_CLASSIFICATIONS.partial_visibility;
+  if (ranked && mentioned && cited)    return GAP_CLASSIFICATIONS.strong_visibility;
+  if (!ranked && !mentioned && cited)  return GAP_CLASSIFICATIONS.citation_only;
+  if (ranked && !mentioned && cited)   return GAP_CLASSIFICATIONS.seo_plus_citation;
+
   return GAP_CLASSIFICATIONS.weak_double_loss;
+}
+
+export function classifyGap(serp: SerpResult, aio: AIOResult): GapClassification {
+  return calculateVisibilityStatus(serp.position, aio.mentionedInText, aio.clientCited);
+}
+
+export interface RunCheckResult {
+  keyword: string;
+  domain: string;
+  brand: string;
+  location: Location;
+  timestamp: string;
+  dataSource: string;
+  isDemo: boolean;
+  
+  googleRank: number | null;
+  googleRankingUrl: string | null;
+  googleRankingTitle: string | null;
+  organicResults: OrganicResult[];
+  serpFeatures: string[];
+
+  aioPresent: boolean;
+  aioSnippet: string | null;
+  aioFullText: string | null;
+  aioBlocks: AIOTextBlock[];
+  citations: AIOCitation[];
+  
+  brandMentioned: boolean;
+  brandCited: boolean;
+
+  uniqueCompetitorsCount: number;
+  totalCitationsCount: number;
+  uniqueCompetitorDomains: string[];
+
+  clientCitationPosition: number | null;
+  clientR2CGap: number | null;
+  
+  status: GapClassification;
+
+  serp: SerpResult;
+  aio: AIOResult;
 }
 
 export interface SearchSnapshot {

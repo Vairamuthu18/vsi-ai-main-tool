@@ -49,7 +49,10 @@ export async function POST(req: NextRequest) {
       scopeLabel = "Dashboard Scope";
     }
 
-    const fullSystemPrompt = `${SYSTEM_BASE_PROMPT}\n\nCURRENT SCOPE: ${scopeLabel}\n\n=== LIVE DATA CONTEXT ===\n${contextText}\n=== END CONTEXT ===`;
+    const language = body.language || "English";
+    const langInstruction = `\n\nCRITICAL LANGUAGE REQUIREMENT: You MUST answer strictly in the following language: ${language} (English, German, Tamil, or Sinhala). All explanation and answer text must be in ${language}.`;
+
+    const fullSystemPrompt = `${SYSTEM_BASE_PROMPT}${langInstruction}\n\nCURRENT SCOPE: ${scopeLabel}\n\n=== LIVE DATA CONTEXT ===\n${contextText}\n=== END CONTEXT ===`;
 
     const encoder = new TextEncoder();
     const responseStream = new ReadableStream({

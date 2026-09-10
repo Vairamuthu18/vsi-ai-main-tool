@@ -75,6 +75,7 @@ interface ResearchData {
     isPositive: boolean;
     monthlyPoints: number[];
   };
+  aiOverview?: string;
   inclusionRates: {
     engine: string;
     percent: string;
@@ -250,11 +251,8 @@ export default function DashboardClientView({
                 className="bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30"
               >
                 <option value="English">English</option>
-                <option value="Spanish">Spanish</option>
-                <option value="French">French</option>
                 <option value="German">German</option>
                 <option value="Tamil">Tamil</option>
-                <option value="Hindi">Hindi</option>
                 <option value="Sinhala">Sinhala</option>
               </select>
 
@@ -407,11 +405,38 @@ export default function DashboardClientView({
                 </div>
               </div>
 
+              {/* Localized AI Intelligence Overview */}
+              {researchData.aiOverview && (
+                <div className="bg-gradient-to-r from-orange-50 via-white to-amber-50 border border-orange-200 rounded-2xl p-5 shadow-2xs space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={18} className="text-[#FF5A1F] animate-pulse" />
+                    <h3 className="text-sm font-bold text-slate-900">
+                      {language === "Tamil"
+                        ? "AI பகுப்பாய்வு சுருக்கம் (AI Summary)"
+                        : language === "German"
+                        ? "KI-Analyseübersicht (AI Summary)"
+                        : language === "Sinhala"
+                        ? "AI විශ්ලේෂණ සාරාංශය (AI Summary)"
+                        : "AI Intelligence Overview"}
+                    </h3>
+                  </div>
+                  <p className="text-xs font-medium text-slate-700 leading-relaxed">
+                    {researchData.aiOverview}
+                  </p>
+                </div>
+              )}
+
               {/* Dynamic Suggested AI Prompts */}
               <div className="bg-white border border-border rounded-2xl p-6 space-y-4 shadow-2xs">
                 <h3 className="text-lg font-extrabold text-foreground flex items-center gap-2">
                   <Sparkles size={20} className="text-[#FF5A1F]" />
-                  Suggested High-Potential AI Prompts & Variations
+                  {language === "Tamil"
+                    ? "பரிந்துரைக்கப்பட்ட உயர் AI தூண்டுதல்கள் & வேறுபாடுகள்"
+                    : language === "German"
+                    ? "Vorgeschlagene KI-Prompts & Variationen"
+                    : language === "Sinhala"
+                    ? "යෝජිත ඉහළ විභව AI විමසීම් සහ වෙනස්කම්"
+                    : "Suggested High-Potential AI Prompts & Variations"}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   {researchData.prompts.map((prompt, i) => (
@@ -597,11 +622,8 @@ export default function DashboardClientView({
                   className="w-full appearance-none bg-white border border-border rounded-xl px-4 py-3 text-sm font-medium text-foreground pr-8 focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30 focus:border-[#FF5A1F] shadow-2xs cursor-pointer"
                 >
                   <option value="English">English</option>
-                  <option value="Spanish">Spanish</option>
-                  <option value="French">French</option>
                   <option value="German">German</option>
                   <option value="Tamil">Tamil</option>
-                  <option value="Hindi">Hindi</option>
                   <option value="Sinhala">Sinhala</option>
                 </select>
                 <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none bg-transparent" />

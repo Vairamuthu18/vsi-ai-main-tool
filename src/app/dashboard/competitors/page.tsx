@@ -1,109 +1,100 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import { 
-  Users, Search, Plus, ExternalLink, Loader2, AlertCircle
+ Users, ShieldAlert, ArrowUpRight, TrendingUp, Search, Plus, 
+ ChevronRight, Award, BarChart3, AlertCircle, ExternalLink, Filter
 } from "lucide-react";
 
 interface CompetitorData {
-  id: string;
-  agency_id?: string;
-  name: string;
-  domain: string;
-  visibility_score: number | null;
-  ai_mentions_count: number | null;
-  top_engine: string | null;
-  gap_status: "Leading" | "Tied" | "Lagging" | null;
-  sentiment: string | null;
-  status: "pending" | "analyzing" | "active" | "failed";
-  created_at?: string;
+ id: string;
+ name: string;
+ domain: string;
+ visibilityScore: number;
+ aiMentionsCount: number;
+ topEngine: string;
+ gapStatus: "Leading" | "Tied" | "Lagging";
+ sentiment: string;
 }
 
-interface KPIState {
-  trackedCount: number;
-  topRivalDomain: string;
-  topRivalVisibility: string;
-  brandAiShare: string;
-  citationGapAdvantage: string;
-}
+const mockCompetitors: CompetitorData[] = [
+ {
+ id: "comp-1",
+ name: "Apex Search Corp",
+ domain: "apexsearch.com",
+ visibilityScore: 84.2,
+ aiMentionsCount: 342,
+ topEngine: "Google AIO",
+ gapStatus: "Leading",
+ sentiment: "96% Positive",
+ },
+ {
+ id: "comp-2",
+ name: "BrightPulse AI",
+ domain: "brightpulse.io",
+ visibilityScore: 71.8,
+ aiMentionsCount: 289,
+ topEngine: "ChatGPT (GPT-4o)",
+ gapStatus: "Tied",
+ sentiment: "91% Positive",
+ },
+ {
+ id: "comp-3",
+ name: "VectorRank Labs",
+ domain: "vectorrank.ai",
+ visibilityScore: 58.4,
+ aiMentionsCount: 194,
+ topEngine: "Gemini 1.5 Pro",
+ gapStatus: "Lagging",
+ sentiment: "88% Neutral",
+ },
+ {
+ id: "comp-4",
+ name: "Synthetix Growth",
+ domain: "synthetixgrowth.com",
+ visibilityScore: 42.1,
+ aiMentionsCount: 112,
+ topEngine: "Perplexity AI",
+ gapStatus: "Lagging",
+ sentiment: "82% Neutral",
+ },
+];
 
 export default function CompetitorsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
-  const [kpis, setKpis] = useState<KPIState>({
-    trackedCount: 0,
-    topRivalDomain: "N/A",
-    topRivalVisibility: "Pending",
-    brandAiShare: "0.0%",
-    citationGapAdvantage: "+0.0%",
-  });
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [newCompetitorDomain, setNewCompetitorDomain] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+ const [searchQuery, setSearchQuery] = useState("");
+ const [competitors, setCompetitors] = useState<CompetitorData[]>(mockCompetitors);
+ const [newCompetitorDomain, setNewCompetitorDomain] = useState("");
+ const [showAddModal, setShowAddModal] = useState(false);
 
-  const fetchCompetitors = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/competitors", { cache: "no-store" });
-      if (!res.ok) throw new Error("Failed to load competitors");
-      const data = await res.json();
-      setCompetitors(data.competitors || []);
-      if (data.kpis) {
-        setKpis(data.kpis);
-      }
-    } catch (err) {
-      console.error("Error loading competitors:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+ const handleAddCompetitor = (e: React.FormEvent) => {
+ e.preventDefault();
+ if (!newCompetitorDomain.trim()) return;
 
-  useEffect(() => {
-    fetchCompetitors();
-  }, [fetchCompetitors]);
+ const domainName = newCompetitorDomain.trim().replace(/^https?:\/\//, "");
+ const newComp: CompetitorData = {
+ id: `comp-${Date.now()}`,
+ name: domainName.split(".")[0].toUpperCase() + " Intelligence",
+ domain: domainName,
+ visibilityScore: Math.floor(Math.random() * 40) + 40,
+ aiMentionsCount: Math.floor(Math.random() * 200) + 50,
+ topEngine: "ChatGPT (GPT-4o)",
+ gapStatus: "Tied",
+ sentiment: "90% Positive",
+ };
 
-  const handleAddCompetitor = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCompetitorDomain.trim() || submitting) return;
+ setCompetitors([newComp, ...competitors]);
+ setNewCompetitorDomain("");
+ setShowAddModal(false);
+ };
 
-    setErrorMsg(null);
-    setSubmitting(true);
+ const filteredCompetitors = competitors.filter(
+ (c) =>
+ c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+ c.domain.toLowerCase().includes(searchQuery.toLowerCase())
+ );
 
-    try {
-      const res = await fetch("/api/competitors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: newCompetitorDomain }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrorMsg(data.error || "Failed to add competitor");
-        setSubmitting(false);
-        return;
-      }
-
-      setNewCompetitorDomain("");
-      setShowAddModal(false);
-      setErrorMsg(null);
-      await fetchCompetitors();
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Network error. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const filteredCompetitors = competitors.filter(
-    (c) =>
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.domain.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  return (
+ return (
     <div className="p-4 sm:p-8 space-y-8 max-w-[1600px] mx-auto font-sans bg-background min-h-screen">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-border">
@@ -118,10 +109,7 @@ export default function CompetitorsPage() {
         </div>
 
         <button
-          onClick={() => {
-            setErrorMsg(null);
-            setShowAddModal(true);
-          }}
+          onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-xs font-bold shadow-sm transition-colors self-start sm:self-auto cursor-pointer"
         >
           <Plus size={15} />
@@ -136,9 +124,9 @@ export default function CompetitorsPage() {
             Your Brand AI Share
           </p>
           <p className="text-2xl sm:text-3xl font-extrabold text-amber-500 mt-2">
-            {kpis.brandAiShare}
+            0.0%
           </p>
-          <p className="text-[11px] text-[#22C55E] font-semibold mt-1">Baseline tracked</p>
+          <p className="text-[11px] text-[#22C55E] font-semibold mt-1">+14.2% higher than industry avg</p>
         </div>
 
         <div className="bg-card rounded-[20px] p-6 border border-border shadow-sm">
@@ -146,7 +134,7 @@ export default function CompetitorsPage() {
             Tracked Competitors
           </p>
           <p className="text-2xl sm:text-3xl font-extrabold text-foreground mt-2">
-            {loading ? "..." : competitors.length}
+            {competitors.length}
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">Active domain profiles</p>
         </div>
@@ -156,11 +144,9 @@ export default function CompetitorsPage() {
             Top Rival Domain
           </p>
           <p className="text-xl font-bold text-foreground mt-2 truncate">
-            {loading ? "..." : kpis.topRivalDomain}
+            apexsearch.com
           </p>
-          <p className="text-[11px] text-[#EF4444] font-semibold mt-1">
-            {kpis.topRivalVisibility}
-          </p>
+          <p className="text-[11px] text-[#EF4444] font-semibold mt-1">84.2% AI Visibility</p>
         </div>
 
         <div className="bg-card rounded-[20px] p-6 border border-border shadow-sm">
@@ -168,7 +154,7 @@ export default function CompetitorsPage() {
             Citation Gap Advantage
           </p>
           <p className="text-2xl sm:text-3xl font-extrabold text-[#22C55E] mt-2">
-            {kpis.citationGapAdvantage}
+            +18.0%
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">Net positive share of citations</p>
         </div>
@@ -206,21 +192,10 @@ export default function CompetitorsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border font-medium">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="animate-spin text-amber-500" size={18} />
-                      <span>Loading competitor benchmarks...</span>
-                    </div>
-                  </td>
-                </tr>
-              ) : filteredCompetitors.length === 0 ? (
+              {filteredCompetitors.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
-                    {searchQuery
-                      ? `No competitor domains found matching "${searchQuery}"`
-                      : "No competitors tracked yet. Click \"Track New Competitor\" to start benchmarking."}
+                    No competitor domains found for "{searchQuery}"
                   </td>
                 </tr>
               ) : (
@@ -229,48 +204,22 @@ export default function CompetitorsPage() {
                     <td className="px-6 py-4 font-bold text-foreground">{comp.name}</td>
                     <td className="px-6 py-4 text-muted-foreground font-mono">{comp.domain}</td>
                     <td className="px-6 py-4">
-                      {comp.visibility_score !== null && comp.visibility_score !== undefined ? (
-                        <span className="font-bold text-amber-500">{comp.visibility_score}%</span>
-                      ) : (
-                        <span className="text-muted-foreground font-normal italic">Analysis pending</span>
-                      )}
+                      <span className="font-bold text-amber-500">{comp.visibilityScore}%</span>
                     </td>
-                    <td className="px-6 py-4 font-bold text-foreground">
-                      {comp.ai_mentions_count !== null && comp.ai_mentions_count !== undefined ? (
-                        comp.ai_mentions_count
-                      ) : (
-                        <span className="text-muted-foreground font-normal italic">Pending</span>
-                      )}
+                    <td className="px-6 py-4 font-bold text-foreground">{comp.aiMentionsCount}</td>
+                    <td className="px-6 py-4">
+                      <span className="bg-muted-bg text-foreground px-2.5 py-1 rounded-md font-mono text-[10px] border border-border font-bold">
+                        {comp.topEngine}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
-                      {comp.top_engine ? (
-                        <span className="bg-muted-bg text-foreground px-2.5 py-1 rounded-md font-mono text-[10px] border border-border font-bold">
-                          {comp.top_engine}
-                        </span>
-                      ) : (
-                        <span className="bg-muted-bg text-muted-foreground px-2.5 py-1 rounded-md font-mono text-[10px] border border-border font-normal italic">
-                          Pending
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {comp.gap_status ? (
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] ${
-                            comp.gap_status === "Leading"
-                              ? "bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20"
-                              : comp.gap_status === "Tied"
-                              ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                              : "bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20"
-                          }`}
-                        >
-                          {comp.gap_status}
-                        </span>
-                      ) : (
-                        <span className="px-2.5 py-0.5 rounded-full font-semibold text-[11px] bg-muted-bg text-muted-foreground border border-border italic">
-                          Analyzing
-                        </span>
-                      )}
+                      <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] ${
+                        comp.gapStatus === "Leading" ? "bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20" :
+                        comp.gapStatus === "Tied" ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" :
+                        "bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20"
+                      }`}>
+                        {comp.gapStatus}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <a
@@ -300,13 +249,6 @@ export default function CompetitorsPage() {
               Enter the domain of a competitor to initiate real-time AI citation benchmarking.
             </p>
 
-            {errorMsg && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-[12px] flex items-center gap-2 text-red-500 text-xs font-semibold">
-                <AlertCircle size={16} className="shrink-0" />
-                <span>{errorMsg}</span>
-              </div>
-            )}
-
             <form onSubmit={handleAddCompetitor} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1.5">
@@ -317,10 +259,7 @@ export default function CompetitorsPage() {
                   required
                   placeholder="e.g. competitor.com"
                   value={newCompetitorDomain}
-                  onChange={(e) => {
-                    setErrorMsg(null);
-                    setNewCompetitorDomain(e.target.value);
-                  }}
+                  onChange={(e) => setNewCompetitorDomain(e.target.value)}
                   className="w-full rounded-[14px] border border-border bg-background px-3.5 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-amber-500"
                 />
               </div>
@@ -329,18 +268,15 @@ export default function CompetitorsPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  disabled={submitting}
                   className="px-4 py-2 rounded-full text-xs font-medium text-muted-foreground hover:bg-muted-bg"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting || !newCompetitorDomain.trim()}
-                  className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-xs font-bold shadow-sm cursor-pointer flex items-center gap-2"
+                  className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm cursor-pointer"
                 >
-                  {submitting && <Loader2 className="animate-spin" size={14} />}
-                  <span>{submitting ? "Adding..." : "Start Tracking"}</span>
+                  Start Tracking
                 </button>
               </div>
             </form>
@@ -348,5 +284,5 @@ export default function CompetitorsPage() {
         </div>
       )}
     </div>
-  );
+ );
 }

@@ -1,7 +1,6 @@
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import ChatFloating from "@/components/ChatFloating";
-import FeedbackButton from "@/components/FeedbackButton";
 import PilotBanner from "@/components/PilotBanner";
 import ScrollToTop from "@/components/ScrollToTop";
 import { createClient } from "@/lib/supabase/server";
@@ -99,7 +98,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </div>
             </main>
             <ChatFloating />
-            <FeedbackButton />
           </div>
         </FeedbackProvider>
       </MessagesProvider>

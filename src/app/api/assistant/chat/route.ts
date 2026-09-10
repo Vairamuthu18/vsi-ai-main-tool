@@ -66,7 +66,10 @@ export async function POST(req: NextRequest) {
       scopeLabel = "Dashboard Scope";
     }
 
-    const fullSystemPrompt = `${SYSTEM_BASE_PROMPT}\n\n=== CURRENT DASHBOARD SCOPE: ${scopeLabel} ===\n${contextText}\n=== END CONTEXT ===`;
+    const language = body.language || "English";
+    const langInstruction = `\n\nCRITICAL LANGUAGE REQUIREMENT: You MUST answer strictly in the following language: ${language} (English, German, Tamil, or Sinhala). All answer text and analysis MUST be in ${language}.`;
+
+    const fullSystemPrompt = `${SYSTEM_BASE_PROMPT}${langInstruction}\n\n=== CURRENT DASHBOARD SCOPE: ${scopeLabel} ===\n${contextText}\n=== END CONTEXT ===`;
 
     // Handle non-streaming JSON request if requested
     if (requestStream === false || req.headers.get("accept") === "application/json") {
