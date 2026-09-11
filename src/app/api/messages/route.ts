@@ -5,97 +5,10 @@ import { Message } from "@/lib/types/messages";
 export const dynamic = "force-dynamic";
 
 // Seed data for fallback persistent store
-const defaultMessages: Message[] = [
-  {
-    id: "msg-001",
-    sender: { name: "Sarah Connor", email: "sarah@skynet-resistance.com" },
-    recipient: { name: "System Admin", email: "admin@searchintel.com" },
-    subject: "Urgent: Keyword Gap Analysis for Q3",
-    preview: "Hey, I was looking at the latest report and we have a major gap in the AI overview section...",
-    body: "<p>Hey,</p><p>I was looking at the latest report and we have a major gap in the AI overview section. We need to optimize our content for the new Gemini citations.</p><p>Can we schedule a call?</p><p>- Sarah</p>",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    lastSaved: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    status: "unread",
-    priority: "high",
-    folder: "inbox",
-    isStarred: true,
-    labels: ["Urgent", "Work"],
-    relatedClient: "Skynet Resistance",
-    aiSummary: "The sender is requesting a meeting to discuss closing keyword gaps in AI overviews for Q3.",
-  },
-  {
-    id: "msg-002",
-    sender: { name: "John Doe", email: "john.doe@example.com", avatar: "https://i.pravatar.cc/150?u=johndoe" },
-    recipient: { name: "System Admin", email: "admin@searchintel.com" },
-    subject: "Monthly Visibility Report",
-    preview: "Please find attached the monthly visibility report for your domains.",
-    body: "<p>Please find attached the monthly visibility report for your domains.</p><p>Let me know if you need any further analysis.</p>",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    lastSaved: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    status: "read",
-    priority: "normal",
-    folder: "inbox",
-    isStarred: false,
-    labels: ["Client"],
-    attachments: [
-      { id: "att-1", name: "Report_August.pdf", size: "2.4 MB", type: "application/pdf", url: "#" }
-    ]
-  },
-  {
-    id: "msg-sent-001",
-    sender: { name: "Me (Admin)", email: "admin@searchintel.com" },
-    recipient: { name: "Sarah Connor", email: "sarah@skynet-resistance.com" },
-    subject: "Re: Urgent: Keyword Gap Analysis for Q3",
-    preview: "Thanks Sarah, I reviewed the AI citation gaps and prepared an optimization proposal...",
-    body: "<p>Hi Sarah,</p><p>I reviewed the AI citation gaps and prepared an optimization proposal for Skynet Resistance.</p><p>Let's discuss on Tuesday.</p>",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
-    lastSaved: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
-    status: "read",
-    priority: "normal",
-    folder: "sent",
-    isStarred: false,
-    labels: ["Follow-up"],
-  },
-  {
-    id: "msg-draft-001",
-    sender: { name: "Me (Admin)", email: "admin@searchintel.com" },
-    recipient: { name: "Alex Rivera", email: "alex.rivera@globaltech.com" },
-    subject: "Q3 AI Citation Strategy & Competitor Analysis",
-    preview: "Hi Alex, draft outline for our upcoming search engine citation audit and recommendations...",
-    body: "Hi Alex,\n\nHere is the initial draft of our Q3 AI citation roadmap. We identified several high-impact gaps in ChatGPT and Gemini search queries.\n\nBest regards,\nSearchIntel Team",
-    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    lastSaved: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    status: "draft",
-    priority: "high",
-    folder: "drafts",
-    isStarred: false,
-    labels: ["Work"],
-    attachments: []
-  },
-  {
-    id: "msg-archived-001",
-    sender: { name: "Support Team", email: "support@searchintel.com" },
-    recipient: { name: "System Admin", email: "admin@searchintel.com" },
-    subject: "Q2 Executive Brief & Visibility Audit - Archived Copy",
-    preview: "Archived visibility report for reference and historical search performance tracking...",
-    body: "<p>Hello Admin,</p><p>This is the completed Q2 Visibility Audit. Stored in archives for historical record.</p>",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    lastSaved: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    status: "read",
-    priority: "normal",
-    folder: "archived",
-    isStarred: false,
-    labels: ["Report"],
-  }
-];
+const defaultMessages: Message[] = [];
 
 // Fallback in-memory store
-let fallbackMessages: Message[] = [...defaultMessages];
+let fallbackMessages: Message[] = [];
 
 function mapDbRowToMessage(row: any): Message {
   return {

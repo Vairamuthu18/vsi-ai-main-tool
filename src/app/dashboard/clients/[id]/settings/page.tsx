@@ -19,20 +19,25 @@ export default async function ClientSettingsPage({
  const clientQ = supabase.from("clients").select("id, name, brand_name, website, ai_mode_enabled, ai_overview_enabled, rank_tracking_enabled, chatgpt_enabled, llm_mentions_enabled, brief_model_override, location_override, check_frequency").eq("id", id);
  const { data: rawClient } = await (isSuperAdmin ? clientQ : clientQ.eq("agency_id", session.agencyId)).single();
 
- const client = rawClient ?? {
-   id,
-   name: "Acme Corp",
-   brand_name: "Acme",
-   website: "https://acme.com",
-   ai_mode_enabled: true,
-   ai_overview_enabled: true,
-   rank_tracking_enabled: true,
-   chatgpt_enabled: true,
-   llm_mentions_enabled: true,
-   brief_model_override: null,
-   location_override: null,
-   check_frequency: "daily",
- };
+  let client = rawClient;
+  if (!client && (id === "valgrow-labs-001" || id === "1" || id === "3")) {
+    client = {
+      id,
+      name: "Valgrow Labs",
+      brand_name: "Valgrow Labs",
+      website: "valgrowlabs.com",
+      ai_mode_enabled: true,
+      ai_overview_enabled: true,
+      rank_tracking_enabled: true,
+      chatgpt_enabled: true,
+      llm_mentions_enabled: true,
+      brief_model_override: null,
+      location_override: null,
+      check_frequency: "daily",
+    };
+  }
+
+  if (!client) notFound();
 
  return (
  <div className="p-4 sm:p-8 max-w-4xl mx-auto space-y-6">

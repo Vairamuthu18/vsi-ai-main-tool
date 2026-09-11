@@ -266,7 +266,7 @@ export default function NewClientPage() {
 
       if (!agencyId) {
         if (isAuthenticatedClient() || getClientCookie("vsi_session")) {
-          agencyId = "agency-001";
+          agencyId = "00000000-0000-0000-0000-000000000001";
         }
       }
 
@@ -385,7 +385,7 @@ export default function NewClientPage() {
                 type="text"
                 value={details.name}
                 onChange={(e) => handleDetailsChange("name", e.target.value)}
-                placeholder="e.g. United SEO"
+                placeholder="e.g. Valgrow Labs"
                 className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-[#FF6B00] focus:outline-none transition-colors"
               />
             </div>
@@ -396,7 +396,7 @@ export default function NewClientPage() {
                 type="text"
                 value={details.website}
                 onChange={(e) => handleDetailsChange("website", e.target.value)}
-                placeholder="e.g. unitedseo.ae"
+                placeholder="e.g. valgrowlabs.com"
                 className={`w-full rounded-xl border bg-background px-4 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-colors ${
                   details.website.trim() && !normaliseDomain(details.website)
                     ? "border-rose-500 focus:border-rose-500"
@@ -418,7 +418,7 @@ export default function NewClientPage() {
                 type="text"
                 value={details.brand_name}
                 onChange={(e) => handleDetailsChange("brand_name", e.target.value)}
-                placeholder="e.g. United SEO"
+                placeholder="e.g. Valgrow Labs"
                 className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-[#FF6B00] focus:outline-none transition-colors"
               />
             </div>

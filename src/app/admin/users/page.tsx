@@ -4,15 +4,7 @@ import { useState } from "react";
 import { Users, Shield, UserX, UserCheck, Building2, Calendar, Mail, Search } from "lucide-react";
 
 const MOCK_USERS = [
- { id: "u1", email: "admin@valgrow.com", full_name: "Mubarak AlFalasi", role: "super_admin", agency_name: "ValGrow Digital", is_disabled: false, agency_is_disabled: false, created_at: "2025-01-15" },
- { id: "u2", email: "user@valgrow.com", full_name: "Sara Ahmed", role: "member", agency_name: "ValGrow Digital", is_disabled: false, agency_is_disabled: false, created_at: "2025-01-20" },
- { id: "u3", email: "ab@abagency.com", full_name: "Abdullah Bakr", role: "admin", agency_name: "AB Agency", is_disabled: false, agency_is_disabled: false, created_at: "2025-03-10" },
- { id: "u4", email: "alex@alexco.com", full_name: "Alex Johnson", role: "admin", agency_name: "ALEX Co.", is_disabled: false, agency_is_disabled: false, created_at: "2025-04-01" },
- { id: "u5", email: "afaaf@afaaftest.com", full_name: "Afaaf Malik", role: "admin", agency_name: "Afaaf Test", is_disabled: false, agency_is_disabled: false, created_at: "2025-04-18" },
- { id: "u6", email: "salma@salmaagency.com", full_name: "Salma Hassan", role: "admin", agency_name: "Salma Agency", is_disabled: false, agency_is_disabled: false, created_at: "2025-05-02" },
- { id: "u7", email: "chris@chrismcelroy.com", full_name: "Chris McElroy", role: "admin", agency_name: "McElroy Digital", is_disabled: false, agency_is_disabled: false, created_at: "2025-05-20" },
- { id: "u8", email: "test@testb4.com", full_name: "Test Pilot User", role: "member", agency_name: "TestB4 Labs", is_disabled: true, agency_is_disabled: true, created_at: "2025-06-01" },
- { id: "u9", email: "readonly@valgrow.com", full_name: "Readonly Member", role: "viewer", agency_name: "ValGrow Digital", is_disabled: false, agency_is_disabled: false, created_at: "2025-06-10" },
+  { id: "00000000-0000-0000-0000-000000000002", email: "admin@valgrow.com", full_name: "Valgrow Admin", role: "super_admin", agency_name: "Valgrow Enterprise", is_disabled: false, agency_is_disabled: false, created_at: "2026-01-01" },
 ];
 
 const ROLE_BADGE: Record<string, string> = {

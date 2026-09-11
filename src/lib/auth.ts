@@ -83,11 +83,11 @@ async function dynamicSession(): Promise<SessionContext> {
   const activeName = fullName || (email ? email.split("@")[0] : "User");
 
   return {
-    userId: "user-001",
+    userId: "00000000-0000-0000-0000-000000000002",
     email: activeEmail,
     fullName: activeName,
     role: "pilot",
-    agencyId: "agency-001",
+    agencyId: "00000000-0000-0000-0000-000000000001",
     agencyName: "Valgrow Enterprise",
     isPilot: false,
     maxKeywords: 999,
@@ -154,7 +154,7 @@ export async function getSession(): Promise<SessionContext | null> {
         email:        resolvedEmail,
         fullName:     resolvedName,
         role:         userRole,
-        agencyId:     profile?.agency_id ?? "agency-001",
+        agencyId:     profile?.agency_id ?? "00000000-0000-0000-0000-000000000001",
         agencyName:   agency?.name ?? "Valgrow Enterprise",
         isPilot:      agency?.is_pilot ?? true,
         maxKeywords:  agency?.max_keywords ?? 10,

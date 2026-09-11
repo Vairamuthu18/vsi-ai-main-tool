@@ -72,7 +72,7 @@ export default function ClientIdentityForm({ clientId, initial, scope = "agency"
             type="text"
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            placeholder="e.g. United SEO"
+            placeholder="e.g. Valgrow Labs"
             className="w-full rounded-[20px] border border-border bg-background text-foreground px-4 py-3 text-sm focus:border-amber-500 focus:outline-none placeholder:text-muted-foreground/70 transition-colors"
           />
         </label>
@@ -85,7 +85,7 @@ export default function ClientIdentityForm({ clientId, initial, scope = "agency"
             type="text"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
-            placeholder="e.g. unitedseo.ae"
+            placeholder="e.g. valgrowlabs.com"
             className={`w-full rounded-[20px] border bg-background text-foreground px-4 py-3 text-sm focus:outline-none placeholder:text-muted-foreground/70 transition-colors ${
               website.trim() && !websiteOk
                 ? "border-rose-500 focus:border-rose-500"

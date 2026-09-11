@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     let contextText = "";
     let scopeLabel = "";
     try {
-      const ctx = await buildChatContext({ agencyId: session?.agencyId || "dev-agency-001", scope });
+      const ctx = await buildChatContext({ agencyId: session?.agencyId || "00000000-0000-0000-0000-000000000001", scope });
       contextText = ctx.contextText;
       scopeLabel = ctx.scopeLabel;
     } catch (e) {

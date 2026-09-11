@@ -6,36 +6,18 @@ import { Building2, Users, Key, Globe, ChevronDown, ChevronUp, Plus, ExternalLin
 
 const MOCK_AGENCIES = [
  {
- id: "ag1", name: "ValGrow Digital", slug: "valgrow-digital", is_pilot: false, is_disabled: false, max_keywords: 500, max_clients: null, created_at: "2025-01-15",
- clients: [
- { id: "c1", name: "VG Digital", brand_name: "VG Digital", website: "vgdigital.com", service_type: "seo" },
- { id: "c2", name: "Athariw", brand_name: "Athariw", website: "athariw.com", service_type: "seo" },
- { id: "c3", name: "ValGrow Labs", brand_name: "ValGrow Labs", website: "valgrowing.com", service_type: "geo" },
- ], keywords: 35,
- },
- {
- id: "ag2", name: "AB Agency", slug: "ab-agency", is_pilot: true, is_disabled: false, max_keywords: 100, max_clients: 5, created_at: "2025-03-10",
- clients: [{ id: "c4", name: "Tap Payments", brand_name: "Tap Payments", website: "tap.company", service_type: "geo" }], keywords: 10,
- },
- {
- id: "ag3", name: "ALEX Co.", slug: "alex-co", is_pilot: true, is_disabled: false, max_keywords: 100, max_clients: 3, created_at: "2025-04-01",
- clients: [{ id: "c5", name: "ALEX", brand_name: "ALEX", website: "alex.sa", service_type: "geo" }], keywords: 6,
- },
- {
- id: "ag4", name: "Afaaf Test", slug: "afaaf-test", is_pilot: true, is_disabled: false, max_keywords: 50, max_clients: 2, created_at: "2025-04-18",
- clients: [{ id: "c6", name: "ValGrow Trial", brand_name: "ValGrow Trial", website: "trial.valgrow.com", service_type: "geo" }], keywords: 4,
- },
- {
- id: "ag5", name: "Salma Agency", slug: "salma-agency", is_pilot: true, is_disabled: false, max_keywords: 100, max_clients: 5, created_at: "2025-05-02",
- clients: [{ id: "c7", name: "MENA Cyber Wire", brand_name: "MENA Cyber Wire", website: "menacyberwire.com", service_type: "geo" }], keywords: 9,
- },
- {
- id: "ag6", name: "McElroy Digital", slug: "mcelroy", is_pilot: true, is_disabled: false, max_keywords: 100, max_clients: 3, created_at: "2025-05-20",
- clients: [{ id: "c9", name: "Chris McElroy", brand_name: "Chris McElroy", website: "chrismcelroy.com", service_type: "geo" }], keywords: 7,
- },
- {
- id: "ag7", name: "TestB4 Labs", slug: "testb4", is_pilot: true, is_disabled: true, max_keywords: 50, max_clients: 1, created_at: "2025-06-01",
- clients: [{ id: "c8", name: "TestB4Pilot", brand_name: "TestB4Pilot", website: "testb4pilot.com", service_type: "geo" }], keywords: 3,
+   id: "00000000-0000-0000-0000-000000000001",
+   name: "Valgrow Enterprise",
+   slug: "valgrow-enterprise",
+   is_pilot: false,
+   is_disabled: false,
+   max_keywords: 999,
+   max_clients: null,
+   created_at: "2026-01-01",
+   clients: [
+     { id: "valgrow-labs-001", name: "Valgrow Labs", brand_name: "Valgrow Labs", website: "valgrowlabs.com", service_type: "seo_geo" },
+   ],
+   keywords: 0,
  },
 ];
 

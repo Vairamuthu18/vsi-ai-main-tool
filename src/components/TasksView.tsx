@@ -20,18 +20,7 @@ export interface TaskItem {
   stale: boolean;
 }
 
-const INITIAL_TASKS: TaskItem[] = [
-  { id: "t1", client_id: "1", client_name: "VG Digital", title: "Optimize meta descriptions for top 10 pages", status: "in_progress", priority: 1, group: "Content", owner: "Writer", keyword: "vg digital seo services", stale: false },
-  { id: "t2", client_id: "1", client_name: "VG Digital", title: "Fix Core Web Vitals — LCP > 2.5s on homepage", status: "todo", priority: 2, group: "Technical", owner: "Developer", keyword: null, stale: false },
-  { id: "t3", client_id: "1", client_name: "VG Digital", title: "Build 5 authoritative backlinks (DA 40+)", status: "todo", priority: 3, group: "Off-page", owner: "Outreach", keyword: "digital marketing agency uae", stale: true },
-  { id: "t4", client_id: "2", client_name: "Athariw", title: "Create GEO-optimized FAQ page for AI results", status: "todo", priority: 1, group: "Content", owner: "Writer", keyword: "athariw ecommerce ksa", stale: false },
-  { id: "t5", client_id: "2", client_name: "Athariw", title: "Schema markup implementation on product pages", status: "in_progress", priority: 2, group: "Technical", owner: "Developer", keyword: null, stale: false },
-  { id: "t6", client_id: "3", client_name: "ValGrow Labs", title: "Publish 3 thought-leadership articles", status: "done", priority: 1, group: "Content", owner: "Writer", keyword: "valgrow saas tools", stale: false },
-  { id: "t7", client_id: "3", client_name: "ValGrow Labs", title: "Set up ChatGPT entity citation tracking", status: "in_progress", priority: 2, group: "Technical", owner: "SEO", keyword: "ai visibility tools", stale: false },
-  { id: "t8", client_id: "4", client_name: "Tap Payments", title: "Competitor gap analysis for fintech keywords", status: "todo", priority: 1, group: "Content", owner: "SEO", keyword: "tap payments saudi arabia", stale: false },
-  { id: "t9", client_id: "7", client_name: "MENA Cyber Wire", title: "Refresh AI mention strategy for cybersecurity", status: "todo", priority: 1, group: "Content", owner: "Writer", keyword: "mena cybersecurity news", stale: true },
-  { id: "t10", client_id: "9", client_name: "Chris McElroy", title: "Personal brand entity optimization", status: "done", priority: 1, group: "Content", owner: "SEO", keyword: "chris mcelroy seo expert", stale: false },
-];
+const INITIAL_TASKS: TaskItem[] = [];
 
 const STATUS_CONFIG: Record<string, { label: string; icon: typeof Circle; color: string; bg: string; border: string }> = {
   todo: { label: "To Do", icon: Circle, color: "text-muted-foreground", bg: "bg-gray-400/10", border: "border-gray-400/20" },
@@ -67,7 +56,7 @@ export default function TasksView() {
 
   // New task form state
   const [newTitle, setNewTitle] = useState("");
-  const [newClient, setNewClient] = useState("VG Digital");
+  const [newClient, setNewClient] = useState("Valgrow Labs");
   const [newGroup, setNewGroup] = useState("Content");
   const [newOwner, setNewOwner] = useState("SEO");
 
@@ -411,10 +400,7 @@ export default function TasksView() {
                     onChange={(e) => setNewClient(e.target.value)}
                     className="w-full rounded-[16px] border border-border bg-background px-3.5 py-2 text-xs text-foreground focus:outline-none focus:border-amber-500"
                   >
-                    <option value="VG Digital">VG Digital</option>
-                    <option value="Athariw">Athariw</option>
-                    <option value="ValGrow Labs">ValGrow Labs</option>
-                    <option value="Tap Payments">Tap Payments</option>
+                    <option value="Valgrow Labs">Valgrow Labs</option>
                   </select>
                 </div>
 

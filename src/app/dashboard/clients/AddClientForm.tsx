@@ -63,7 +63,7 @@ export default function AddClientForm({ agencyId }: { agencyId: string }) {
  type="text"
  value={name}
  onChange={(e) => setName(e.target.value)}
- placeholder="e.g. United SEO"
+ placeholder="e.g. Valgrow Labs"
  required
  className="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-amber-400 focus:outline-none"
  />
@@ -75,7 +75,7 @@ export default function AddClientForm({ agencyId }: { agencyId: string }) {
  type="text"
  value={website}
  onChange={(e) => setWebsite(e.target.value)}
- placeholder="e.g. unitedseo.ae"
+ placeholder="e.g. valgrowlabs.com"
  className="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-amber-400 focus:outline-none"
  />
  </div>
@@ -89,7 +89,7 @@ export default function AddClientForm({ agencyId }: { agencyId: string }) {
  type="text"
  value={brandName}
  onChange={(e) => setBrandName(e.target.value)}
- placeholder="e.g. United SEO"
+ placeholder="e.g. Valgrow Labs"
  className="w-full rounded-lg border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-amber-400 focus:outline-none"
  />
  </div>

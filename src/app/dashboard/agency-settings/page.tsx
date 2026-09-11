@@ -191,7 +191,7 @@ export default function AgencySettingsPage() {
                   </div>
 
                   {[
-                    { label: "Agency ID", value: "mock-agency-001", mono: true },
+                    { label: "Agency ID", value: "00000000-0000-0000-0000-000000000001", mono: true },
                     { label: "User Email", value: "admin@example.com", mono: false },
                     { label: "User Role", value: "Super Admin", mono: false },
                     { label: "Max Keywords", value: "1,000", mono: false },

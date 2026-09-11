@@ -14,35 +14,9 @@ export default async function DashboardPage() {
   let agency: any = null;
 
   if (isDummySupabase()) {
-    clients = [
-      { id: "client-1", name: "Valgrow GEO Client 1", service_type: "geo", website: "https://valgrow.com", agency_id: "agency-001" },
-      { id: "client-2", name: "Valgrow SEO Client 2", service_type: "seo", website: "https://valgrow.com", agency_id: "agency-001" },
-    ];
-    keywordCount = 15;
-    recentResults = [
-      {
-        gap_label: "highly_cited",
-        client_id: "client-1",
-        keyword: "best CRM software",
-        track_type: "geo",
-        rank_position: 1,
-        aio_present: true,
-        client_cited: true,
-        mentioned_in_text: true,
-        created_at: new Date().toISOString(),
-      },
-      {
-        gap_label: "mentioned",
-        client_id: "client-1",
-        keyword: "top sales tool",
-        track_type: "geo",
-        rank_position: 2,
-        aio_present: true,
-        client_cited: false,
-        mentioned_in_text: true,
-        created_at: new Date().toISOString(),
-      },
-    ];
+    clients = [];
+    keywordCount = 0;
+    recentResults = [];
     agency = { max_clients: 10, is_pilot: false };
   } else {
     const supabase = await createClient();

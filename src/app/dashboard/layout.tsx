@@ -20,10 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   let agency: any = null;
 
   if (isDummySupabase()) {
-    clients = [
-      { id: "client-1", name: "Valgrow GEO Client 1", service_type: "geo", agencies: { name: "Valgrow Enterprise", display_name: "Valgrow Enterprise" } },
-      { id: "client-2", name: "Valgrow SEO Client 2", service_type: "seo", agencies: { name: "Valgrow Enterprise", display_name: "Valgrow Enterprise" } },
-    ];
+    clients = [];
     agency = { max_clients: 10, is_pilot: false };
   } else {
     const supabase = await createClient();

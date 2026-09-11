@@ -31,7 +31,7 @@ const initialFeedback: FeedbackItem[] = [
  category: "UX Improvement",
  subject: "Dark Mode Contrast for Trajectory Chart",
  message: "The trajectory chart looks great in dark mode! Could we increase line width for winning citations?",
- author: "client@acme.com",
+ author: "client@valgrowlabs.com",
  createdAt: "2026-07-20",
  status: "Resolved",
  upvotes: 12,

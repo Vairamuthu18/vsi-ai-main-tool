@@ -284,11 +284,7 @@ export default function ServiceModuleView({ moduleType }: ServiceModuleViewProps
    ───────────────────────────────────────────────────────────── */}
 function AllServicesDashboard({ searchQuery, setSearchQuery, filterCategory, setFilterCategory }: any) {
   const servicesList = [
-    { client: "Acme Corp", service: "Enterprise SEO + GEO", type: "seo-tracked", campaigns: 8, perf: "96/100", status: "Active" },
-    { client: "Apex Logistics", service: "Organic Rank Tracking", type: "seo-tracked", campaigns: 4, perf: "91/100", status: "Active" },
-    { client: "HealthPlus Systems", service: "AI Citation Monitor", type: "geo-tracked", campaigns: 6, perf: "94/100", status: "Active" },
-    { client: "FintechWave", service: "Multi-Engine GEO", type: "geo-tracked", campaigns: 5, perf: "89/100", status: "Active" },
-    { client: "CloudScale Inc", service: "Technical SEO Audit", type: "seo-tracked", campaigns: 3, perf: "98/100", status: "Active" },
+    { client: "Valgrow Labs", service: "Enterprise SEO + GEO", type: "seo-tracked", campaigns: 0, perf: "100/100", status: "Active" },
   ];
 
   const filtered = servicesList.filter((s) => {

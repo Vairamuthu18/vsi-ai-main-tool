@@ -3,50 +3,131 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Plus, Search, Globe, Tag, MapPin, Users, TrendingUp } from "lucide-react";
-import { getAllClients, ClientItem } from "@/lib/client-store";
+import { createClient } from "@/lib/supabase/client";
+import { getCustomClients, saveCustomClient, ClientItem } from "@/lib/client-store";
 
-const MOCK_CLIENTS: ClientItem[] = [
- { id: "1", name: "VG Digital", brand_name: "VG Digital", website: "vgdigital.com", service_type: "seo", country: "UAE", industry: "Digital Marketing", keywords: 12, winRate: 67, tasks: 3 },
- { id: "2", name: "Athariw", brand_name: "Athariw", website: "athariw.com", service_type: "seo", country: "KSA", industry: "E-commerce", keywords: 8, winRate: 42, tasks: 2 },
- { id: "3", name: "ValGrow Labs", brand_name: "ValGrow Labs", website: "valgrowing.com", service_type: "geo", country: "UAE", industry: "SaaS", keywords: 15, winRate: 53, tasks: 2 },
- { id: "4", name: "Tap Payments", brand_name: "Tap Payments", website: "tap.company", service_type: "geo", country: "KSA", industry: "FinTech", keywords: 10, winRate: 80, tasks: 1 },
- { id: "5", name: "ALEX", brand_name: "ALEX", website: "alex.sa", service_type: "geo", country: "Egypt", industry: "Retail", keywords: 6, winRate: 33, tasks: 0 },
- { id: "6", name: "ValGrow Trial", brand_name: "ValGrow Trial", website: "trial.valgrow.com", service_type: "geo", country: "UAE", industry: "Consulting", keywords: 4, winRate: 25, tasks: 0 },
- { id: "7", name: "MENA Cyber Wire", brand_name: "MENA Cyber Wire", website: "menacyberwire.com", service_type: "geo", country: "UAE", industry: "Cybersecurity", keywords: 9, winRate: 55, tasks: 1 },
- { id: "8", name: "TestB4Pilot", brand_name: "TestB4Pilot", website: "testb4pilot.com", service_type: "geo", country: "KSA", industry: "Tech", keywords: 3, winRate: 0, tasks: 0 },
- { id: "9", name: "Chris McElroy", brand_name: "Chris McElroy", website: "chrismcelroy.com", service_type: "geo", country: "USA", industry: "Personal Brand", keywords: 7, winRate: 71, tasks: 1 },
-];
+const VALGROW_LABS_CLIENT: ClientItem = {
+  id: "valgrow-labs-001",
+  name: "Valgrow Labs",
+  brand_name: "Valgrow Labs",
+  website: "valgrowlabs.com",
+  service_type: "seo_geo",
+  country: "United Arab Emirates",
+  industry: "Technology / SaaS",
+  default_location: "ae",
+  keywords: 0,
+  winRate: 0,
+  tasks: 0,
+};
 
 const SERVICE_BADGE: Record<string, { label: string; color: string }> = {
- seo: { label: "SEO", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
- geo: { label: "GEO", color: "bg-[#FF4500]/20 text-[#FF4500] border-[#FF4500]/30" },
- seo_geo: { label: "SEO+GEO", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
+  seo: { label: "SEO", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+  geo: { label: "GEO", color: "bg-[#FF4500]/20 text-[#FF4500] border-[#FF4500]/30" },
+  seo_geo: { label: "SEO+GEO", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
 };
 
 const AVATAR_COLORS = [
- "from-[#FF4500] to-[#FF6B35]",
- "from-blue-500 to-blue-600",
- "from-[#00E676] to-emerald-600",
- "from-purple-500 to-purple-600",
- "from-[#FFD600] to-yellow-600",
+  "from-[#FF4500] to-[#FF6B35]",
+  "from-blue-500 to-blue-600",
+  "from-[#00E676] to-emerald-600",
+  "from-purple-500 to-purple-600",
+  "from-[#FFD600] to-yellow-600",
 ];
 
 export default function ClientsPage() {
- const [query, setQuery] = useState("");
- const [clientsList, setClientsList] = useState<ClientItem[]>([]);
+  const [query, setQuery] = useState("");
+  const [clientsList, setClientsList] = useState<ClientItem[]>([]);
 
- useEffect(() => {
-  const update = () => {
-   setClientsList(getAllClients(MOCK_CLIENTS));
-  };
-  update();
-  window.addEventListener("storage", update);
-  window.addEventListener("clients_updated", update);
-  return () => {
-   window.removeEventListener("storage", update);
-   window.removeEventListener("clients_updated", update);
-  };
- }, []);
+  useEffect(() => {
+    async function loadClients() {
+      const custom = getCustomClients();
+      const supabase = createClient();
+      let dbClients: ClientItem[] = [];
+
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("id, name, brand_name, website, service_type, country, industry, default_location, created_at");
+
+        if (!error && data) {
+          dbClients = data.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            brand_name: c.brand_name || c.name,
+            website: c.website || "",
+            service_type: c.service_type || "seo_geo",
+            country: c.country || "United Arab Emirates",
+            industry: c.industry || "Technology / SaaS",
+            default_location: c.default_location || "ae",
+            keywords: 0,
+            winRate: 0,
+            tasks: 0,
+            created_at: c.created_at,
+          }));
+        }
+      } catch (err) {
+        console.error("Error loading clients from Supabase:", err);
+      }
+
+      // Merge Supabase DB clients and local custom clients (deduplicated by ID)
+      const mergedMap = new Map<string, ClientItem>();
+      dbClients.forEach((c) => mergedMap.set(c.id, c));
+      custom.forEach((c) => {
+        if (!mergedMap.has(c.id)) {
+          mergedMap.set(c.id, c);
+        }
+      });
+
+      const DEMO_DOMAINS = new Set([
+        "zomato.com", "vgdigital.ae", "seo.ae", "vgdigital.com", "athariw.com",
+        "tap.company", "alex.sa", "trial.valgrow.com", "menacyberwire.com",
+        "testb4pilot.com", "chrismcelroy.com", "acme.com", "unitedseo.ae", "valgrowing.com"
+      ]);
+
+      let list = Array.from(mergedMap.values()).filter((c) => {
+        const w = (c.website || "").toLowerCase().trim();
+        const n = (c.name || "").toLowerCase().trim();
+        return !DEMO_DOMAINS.has(w) && n !== "zomato" && n !== "vg" && n !== "seo" && n !== "vg digital" && n !== "athariw" && n !== "tap payments" && n !== "alex";
+      });
+
+      // If list is empty, initialize our real client Valgrow Labs
+      if (list.length === 0) {
+        list = [VALGROW_LABS_CLIENT];
+        saveCustomClient(VALGROW_LABS_CLIENT);
+
+        // Try to also seed Valgrow Labs into Supabase DB if authenticated user profile agency exists
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: profile } = await supabase.from("profiles").select("agency_id").eq("id", user.id).single();
+            if (profile?.agency_id) {
+              await supabase.from("clients").insert({
+                name: VALGROW_LABS_CLIENT.name,
+                brand_name: VALGROW_LABS_CLIENT.brand_name,
+                website: VALGROW_LABS_CLIENT.website,
+                service_type: VALGROW_LABS_CLIENT.service_type,
+                country: VALGROW_LABS_CLIENT.country,
+                industry: VALGROW_LABS_CLIENT.industry,
+                default_location: VALGROW_LABS_CLIENT.default_location,
+                agency_id: profile.agency_id,
+              });
+            }
+          }
+        } catch {}
+      }
+
+      setClientsList(list);
+    }
+
+    loadClients();
+
+    window.addEventListener("storage", loadClients);
+    window.addEventListener("clients_updated", loadClients);
+    return () => {
+      window.removeEventListener("storage", loadClients);
+      window.removeEventListener("clients_updated", loadClients);
+    };
+  }, []);
 
  const filtered = clientsList.filter((c) => {
   const q = query.toLowerCase();

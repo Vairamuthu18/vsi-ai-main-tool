@@ -62,24 +62,24 @@ export default function AddKeywordsPage() {
         } else {
           setClient({
             id: clientId,
-            name: "Acme Corp",
-            service_type: "seo",
-            website: "https://acme.com",
-            brand_name: "Acme",
-            industry: "Tech",
-            default_location: "us"
+            name: "Valgrow Labs",
+            service_type: "seo_geo",
+            website: "valgrowlabs.com",
+            brand_name: "Valgrow Labs",
+            industry: "Technology / SaaS",
+            default_location: "ae"
           });
         }
       } catch {
         if (!active) return;
         setClient({
           id: clientId,
-          name: "Acme Corp",
-          service_type: "seo",
-          website: "https://acme.com",
-          brand_name: "Acme",
-          industry: "Tech",
-          default_location: "us"
+          name: "Valgrow Labs",
+          service_type: "seo_geo",
+          website: "valgrowlabs.com",
+          brand_name: "Valgrow Labs",
+          industry: "Technology / SaaS",
+          default_location: "ae"
         });
       }
     }
@@ -161,7 +161,7 @@ export default function AddKeywordsPage() {
 
     if (!agencyId) {
       if (isAuthenticatedClient() || getClientCookie("vsi_session")) {
-        agencyId = "agency-001";
+        agencyId = "00000000-0000-0000-0000-000000000001";
       }
     }
 

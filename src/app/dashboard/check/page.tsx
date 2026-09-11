@@ -157,7 +157,7 @@ export default function QuickCheckPage() {
                 type="text"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
-                placeholder="e.g. unitedseo.ae"
+                placeholder="e.g. valgrowlabs.com"
                 required
                 className={`w-full bg-background border rounded-[20px] px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none transition-colors ${
                   domain.trim() && !normaliseDomain(domain)
@@ -178,7 +178,7 @@ export default function QuickCheckPage() {
                 type="text"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                placeholder="e.g. United SEO"
+                placeholder="e.g. Valgrow Labs"
                 required
                 className="w-full bg-background border border-border focus:border-amber-500 rounded-[20px] px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none transition-colors"
               />

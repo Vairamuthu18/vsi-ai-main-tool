@@ -18,52 +18,11 @@ interface CompetitorData {
  sentiment: string;
 }
 
-const mockCompetitors: CompetitorData[] = [
- {
- id: "comp-1",
- name: "Apex Search Corp",
- domain: "apexsearch.com",
- visibilityScore: 84.2,
- aiMentionsCount: 342,
- topEngine: "Google AIO",
- gapStatus: "Leading",
- sentiment: "96% Positive",
- },
- {
- id: "comp-2",
- name: "BrightPulse AI",
- domain: "brightpulse.io",
- visibilityScore: 71.8,
- aiMentionsCount: 289,
- topEngine: "ChatGPT (GPT-4o)",
- gapStatus: "Tied",
- sentiment: "91% Positive",
- },
- {
- id: "comp-3",
- name: "VectorRank Labs",
- domain: "vectorrank.ai",
- visibilityScore: 58.4,
- aiMentionsCount: 194,
- topEngine: "Gemini 1.5 Pro",
- gapStatus: "Lagging",
- sentiment: "88% Neutral",
- },
- {
- id: "comp-4",
- name: "Synthetix Growth",
- domain: "synthetixgrowth.com",
- visibilityScore: 42.1,
- aiMentionsCount: 112,
- topEngine: "Perplexity AI",
- gapStatus: "Lagging",
- sentiment: "82% Neutral",
- },
-];
+const mockCompetitors: CompetitorData[] = [];
 
 export default function CompetitorsPage() {
  const [searchQuery, setSearchQuery] = useState("");
- const [competitors, setCompetitors] = useState<CompetitorData[]>(mockCompetitors);
+ const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
  const [newCompetitorDomain, setNewCompetitorDomain] = useState("");
  const [showAddModal, setShowAddModal] = useState(false);
 

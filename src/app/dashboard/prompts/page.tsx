@@ -66,9 +66,9 @@ export default function PromptsPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const [testVars, setTestVars] = useState({
-    keyword: "best seo agency dubai",
+    keyword: "best saas platform",
     location: "UAE",
-    client_domain: "unitedseo.ae",
+    client_domain: "valgrowlabs.com",
     competitors: "competitor1.com, competitor2.com",
   });
 
