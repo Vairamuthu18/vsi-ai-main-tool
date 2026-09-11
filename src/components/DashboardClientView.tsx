@@ -80,6 +80,13 @@ interface ResearchData {
     engine: string;
     percent: string;
   }[];
+  organicResultsCount?: number;
+  topOrganicResults?: {
+    position?: number;
+    title: string;
+    link: string;
+    snippet?: string;
+  }[];
 }
 
 export default function DashboardClientView({
@@ -96,10 +103,12 @@ export default function DashboardClientView({
   const queryParam = searchParams.get("q") || "";
   const langParam = searchParams.get("lang") || "English";
   const locParam = searchParams.get("loc") || "India";
+  const serviceParam = (searchParams.get("service") as "all-services" | "seo-tracked" | "geo-tracked") || "all-services";
 
   const [searchQuery, setSearchQuery] = useState(queryParam);
   const [language, setLanguage] = useState(langParam);
   const [location, setLocation] = useState(locParam);
+  const [selectedService, setSelectedService] = useState<"all-services" | "seo-tracked" | "geo-tracked">(serviceParam);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const [researchData, setResearchData] = useState<ResearchData | null>(null);
@@ -114,9 +123,10 @@ export default function DashboardClientView({
     setSearchQuery(queryParam);
     if (searchParams.get("lang")) setLanguage(searchParams.get("lang")!);
     if (searchParams.get("loc")) setLocation(searchParams.get("loc")!);
+    if (searchParams.get("service")) setSelectedService(searchParams.get("service") as any);
   }, [queryParam, searchParams]);
 
-  const fetchKeywordResearch = async (kw: string, lang: string, loc: string) => {
+  const fetchKeywordResearch = async (kw: string, lang: string, loc: string, svc: string = selectedService) => {
     setResearchData(null);
     setIsLoadingResearch(true);
     setResearchError(null);
@@ -125,7 +135,7 @@ export default function DashboardClientView({
       const res = await fetch("/api/research", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: kw, language: lang, location: loc }),
+        body: JSON.stringify({ keyword: kw, language: lang, location: loc, service: svc }),
       });
 
       if (!res.ok) {
@@ -148,13 +158,22 @@ export default function DashboardClientView({
 
   useEffect(() => {
     if (activeKeyword) {
-      fetchKeywordResearch(activeKeyword, language, location);
+      fetchKeywordResearch(activeKeyword, language, location, selectedService);
     } else {
       setResearchData(null);
       setIsLoadingResearch(false);
       setResearchError(null);
     }
-  }, [activeKeyword, language, location]);
+  }, [activeKeyword, language, location, selectedService]);
+
+  const handleServiceSelect = (val: "all-services" | "seo-tracked" | "geo-tracked") => {
+    setSelectedService(val);
+    if (activeKeyword) {
+      router.push(
+        `/dashboard?q=${encodeURIComponent(activeKeyword)}&lang=${encodeURIComponent(language)}&loc=${encodeURIComponent(location)}&service=${encodeURIComponent(val)}`
+      );
+    }
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,7 +181,7 @@ export default function DashboardClientView({
     
     setIsAnalyzing(true);
     router.push(
-      `/dashboard?q=${encodeURIComponent(searchQuery.trim())}&lang=${encodeURIComponent(language)}&loc=${encodeURIComponent(location)}`
+      `/dashboard?q=${encodeURIComponent(searchQuery.trim())}&lang=${encodeURIComponent(language)}&loc=${encodeURIComponent(location)}&service=${encodeURIComponent(selectedService)}`
     );
     setIsAnalyzing(false);
   };
@@ -171,7 +190,7 @@ export default function DashboardClientView({
     setSearchQuery(example);
     setIsAnalyzing(true);
     router.push(
-      `/dashboard?q=${encodeURIComponent(example)}&lang=${encodeURIComponent(language)}&loc=${encodeURIComponent(location)}`
+      `/dashboard?q=${encodeURIComponent(example)}&lang=${encodeURIComponent(language)}&loc=${encodeURIComponent(location)}&service=${encodeURIComponent(selectedService)}`
     );
     setIsAnalyzing(false);
   };
@@ -245,10 +264,12 @@ export default function DashboardClientView({
                 )}
               </div>
 
+
+
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30"
+                className="bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30 cursor-pointer"
               >
                 <option value="English">English</option>
                 <option value="German">German</option>
@@ -259,7 +280,7 @@ export default function DashboardClientView({
               <select
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30"
+                className="bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30 cursor-pointer"
               >
                 <option value="India">🇮🇳 India</option>
                 <option value="United States">🇺🇸 United States</option>
@@ -423,6 +444,58 @@ export default function DashboardClientView({
                   <p className="text-xs font-medium text-slate-700 leading-relaxed">
                     {researchData.aiOverview}
                   </p>
+                </div>
+              )}
+
+              {/* Real Live Organic Search & Citation Results */}
+              {researchData.topOrganicResults && researchData.topOrganicResults.length > 0 && (
+                <div className="bg-white border border-border rounded-2xl p-6 space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+                      <Globe size={18} className="text-[#FF5A1F]" />
+                      {selectedService === "seo-tracked"
+                        ? "Real Live Google Organic Rankings & Indexing"
+                        : selectedService === "geo-tracked"
+                        ? "Real Generative AI Engine Citations & Sources"
+                        : "Real Live Google Search & Indexing Results"}
+                    </h3>
+                    <span className="text-xs bg-slate-100 text-slate-700 font-bold px-2.5 py-1 rounded-lg border border-slate-200 flex items-center gap-1">
+                      <Globe size={12} className="text-[#FF5A1F]" />
+                      Live SERP Data ({researchData.topOrganicResults.length} Live Sources)
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Actual ranking web pages & content cited by Google Search & AI engines for &quot;{activeKeyword}&quot;.
+                  </p>
+                  <div className="space-y-3">
+                    {researchData.topOrganicResults.map((item, index) => (
+                      <div key={index} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1 hover:border-[#FF5A1F]/50 transition-all">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-[11px] font-extrabold text-[#FF5A1F] bg-[#FF5A1F]/10 px-2.5 py-0.5 rounded-full border border-[#FF5A1F]/20">
+                            #{item.position || index + 1} SERP Rank
+                          </span>
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] font-semibold text-blue-600 hover:underline flex items-center gap-1 truncate max-w-md"
+                          >
+                            {item.link} <ExternalLink size={11} />
+                          </a>
+                        </div>
+                        <h4 className="text-xs font-bold text-foreground hover:text-[#FF5A1F]">
+                          <a href={item.link} target="_blank" rel="noopener noreferrer">
+                            {item.title}
+                          </a>
+                        </h4>
+                        {item.snippet && (
+                          <p className="text-[11px] text-slate-600 leading-snug font-normal">
+                            {item.snippet}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -593,7 +666,7 @@ export default function DashboardClientView({
 
           <form onSubmit={handleSearchSubmit} className="flex flex-col lg:flex-row items-stretch lg:items-end gap-3.5">
             {/* Search Input Box */}
-            <div className="flex-1 min-w-[280px] relative">
+            <div className="flex-1 min-w-[240px] relative">
               <label className="block text-[11px] font-bold text-foreground mb-1">
                 Keyword / Website <span className="text-red-500">*</span>
               </label>
@@ -610,8 +683,27 @@ export default function DashboardClientView({
               </div>
             </div>
 
-            {/* Language Selector */}
+            {/* Service Filter Selector */}
             <div className="w-full lg:w-44 space-y-1">
+              <label className="block text-[11px] font-bold text-foreground">
+                Service <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedService}
+                  onChange={(e) => handleServiceSelect(e.target.value as any)}
+                  className="w-full appearance-none bg-white border border-border rounded-xl px-4 py-3 text-sm font-medium text-foreground pr-8 focus:outline-none focus:ring-2 focus:ring-[#FF5A1F]/30 focus:border-[#FF5A1F] shadow-2xs cursor-pointer"
+                >
+                  <option value="all-services">All Services</option>
+                  <option value="seo-tracked">SEO Tracked</option>
+                  <option value="geo-tracked">GEO Tracked</option>
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none bg-transparent" />
+              </div>
+            </div>
+
+            {/* Language Selector */}
+            <div className="w-full lg:w-40 space-y-1">
               <label className="block text-[11px] font-bold text-foreground">
                 Language <span className="text-red-500">*</span>
               </label>
@@ -631,7 +723,7 @@ export default function DashboardClientView({
             </div>
 
             {/* Location Selector */}
-            <div className="w-full lg:w-52 space-y-1">
+            <div className="w-full lg:w-48 space-y-1">
               <label className="block text-[11px] font-bold text-foreground">
                 Location <span className="text-red-500">*</span>
               </label>

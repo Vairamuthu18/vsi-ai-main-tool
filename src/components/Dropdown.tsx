@@ -241,7 +241,7 @@ export function Dropdown({ options, value, onChange, trigger, variant = "default
                             height: variant === "filter" ? "30px" : (variant === "date-range" ? "30px" : "34px"),
                             padding: variant === "filter" ? "4px 8px" : (variant === "default" ? "0 12px" : "4px 8px"),
                             backgroundColor: isSelected 
-                              ? (variant === "filter" ? (isDark ? "#FF6B00" : "#4F8EF7") : (variant === "date-range" ? (isDark ? "#FF6B00" : "#4F8EF7") : "#FF6B00")) 
+                              ? "#FF5A1F" 
                               : (isActive ? (variant === "filter" ? (isDark ? "#2B2B32" : "#F5F5F5") : (variant === "date-range" ? (isDark ? "#2B2B32" : "#F5F5F5") : "#2B2B32")) : "transparent"),
                             color: isSelected 
                               ? "#FFFFFF" 
@@ -253,7 +253,7 @@ export function Dropdown({ options, value, onChange, trigger, variant = "default
                           }}
                         >
                           <div className="flex flex-col">
-                            <span className={`${variant === "default" ? 'text-[13px]' : 'text-[12px]'} font-medium`} style={{ color: "inherit" }}>
+                            <span className={`${variant === "default" ? 'text-[13px]' : 'text-[12px]'} ${variant === "filter" ? 'font-bold' : 'font-medium'}`} style={{ color: "inherit" }}>
                               {option.label}
                             </span>
                             {option.secondaryLabel && (

@@ -8,9 +8,10 @@ import { Dropdown } from "@/components/Dropdown";
 interface ServiceFilterDropdownProps {
   currentValue?: "all-services" | "seo-tracked" | "geo-tracked" | "all" | "seo" | "geo";
   onSelect?: (value: "all-services" | "seo-tracked" | "geo-tracked") => void;
+  className?: string;
 }
 
-export default function ServiceFilterDropdown({ currentValue, onSelect }: ServiceFilterDropdownProps) {
+export default function ServiceFilterDropdown({ currentValue, onSelect, className }: ServiceFilterDropdownProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -41,9 +42,7 @@ export default function ServiceFilterDropdown({ currentValue, onSelect }: Servic
 
     if (onSelect) {
       onSelect(filterVal);
-    }
-    
-    if (pathname !== targetRoute) {
+    } else if (pathname !== targetRoute) {
       router.push(targetRoute);
     }
   };
@@ -71,12 +70,15 @@ export default function ServiceFilterDropdown({ currentValue, onSelect }: Servic
         { value: "geo", label: "GEO Tracked" }
       ]}
       trigger={
-        <div className="flex items-center gap-2 bg-card border border-border/80 rounded-full px-[14px] py-[6px] px-4 py-2 text-xs font-semibold text-foreground shadow-[0_15px_40px_rgba(0,0,0,0.35)] transition-all duration-250 ease-out hover:-translate-y-[3px] hover:shadow-[0_20px_60px_rgba(255,90,31,0.15)] outline-none cursor-pointer">
-          <Filter size={14} className="text-muted-foreground" />
-          <span>Filter:</span>
-          <div className="flex items-center gap-1 font-bold text-foreground">
-            <span>{getLabelText()}</span>
-          </div>
+        <div
+          className={
+            className ||
+            "flex items-center gap-1.5 bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-semibold text-foreground hover:bg-slate-100 hover:border-[#FF5A1F]/50 transition-all outline-none cursor-pointer shrink-0"
+          }
+        >
+          <Filter size={14} className="text-muted-foreground shrink-0" />
+          <span className="text-muted-foreground font-medium">Filter:</span>
+          <span className="font-bold text-foreground">{getLabelText()}</span>
         </div>
       }
     />

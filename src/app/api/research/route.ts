@@ -8,6 +8,7 @@ interface ResearchRequestBody {
   keyword?: string;
   language?: string;
   location?: string;
+  service?: string;
 }
 
 const GL_MAP: Record<string, string> = {
@@ -296,6 +297,7 @@ export async function POST(req: NextRequest) {
     const keyword = body.keyword?.trim();
     const location = body.location || "India";
     const language = body.language || "English";
+    const service = body.service || "all-services";
 
     if (!keyword) {
       return NextResponse.json(
@@ -458,13 +460,21 @@ interface DbSearchResult {
 
     const aiOverviewText = localized.aiOverview(keyword, location);
 
+    let dataSourceText = serpData ? "SerpAPI Live Google Search" : "SearchIntel Engine Data";
+    if (service === "seo" || service === "seo-tracked") {
+      dataSourceText = "SEO Tracked • Live Organic SERP Data";
+    } else if (service === "geo" || service === "geo-tracked") {
+      dataSourceText = "GEO Tracked • Generative Engine Citation Data";
+    }
+
     return NextResponse.json({
       success: true,
       keyword,
       location,
       language,
+      service,
       aiOverview: aiOverviewText,
-      dataSource: serpData ? "SerpAPI Live Google Search" : "SearchIntel Engine Data",
+      dataSource: dataSourceText,
       serpError: serpError ?? null,
       metrics: {
         searches: {
